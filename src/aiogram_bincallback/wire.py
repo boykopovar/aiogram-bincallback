@@ -1,0 +1,6 @@
+def wire_encode(data: bytes) -> str:
+    ...
+
+
+def wire_decode(packed: str) -> bytes:
+    ...
