@@ -44,11 +44,6 @@ class MissingSignedError(DefinitionError):
         super().__init__(f"int field '{path}' requires an explicit signed= argument to bfield()")
 
 
-class NestedOptionalError(DefinitionError):
-    def __init__(self, path: str) -> None:
-        super().__init__(f"field '{path}' nests Optional inside Optional, which is not allowed")
-
-
 class NestedCallbackDataError(DefinitionError):
     def __init__(self, path: str) -> None:
         super().__init__(f"field '{path}' embeds a BinaryCallbackData subclass, use a plain BaseModel instead")

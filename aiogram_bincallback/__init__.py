@@ -10,7 +10,6 @@ from aiogram_bincallback.core import MissingBinOrderError
 from aiogram_bincallback.core import MissingBitsError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
-from aiogram_bincallback.core import NestedOptionalError
 from aiogram_bincallback.core import PayloadCorruptError
 from aiogram_bincallback.core import PrefixCollisionError
 from aiogram_bincallback.core import PrefixMismatchError
@@ -33,7 +32,6 @@ __all__ = (
     "MissingBitsError",
     "MissingSignedError",
     "NestedCallbackDataError",
-    "NestedOptionalError",
     "PayloadCorruptError",
     "PrefixCollisionError",
     "PrefixMismatchError",

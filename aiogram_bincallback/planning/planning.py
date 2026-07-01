@@ -25,7 +25,6 @@ from aiogram_bincallback.core import MissingBinOrderError
 from aiogram_bincallback.core import MissingBitsError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
-from aiogram_bincallback.core import NestedOptionalError
 from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 
@@ -133,10 +132,7 @@ def _unwrap_optional(annotation: Any, path: str) -> Tuple[Any, bool]:
     non_none_args = tuple(arg for arg in args if arg is not type(None))
     if len(non_none_args) != 1 or len(non_none_args) == len(args):
         raise UnsupportedFieldTypeError(path, annotation)
-    inner = non_none_args[0]
-    if get_origin(inner) is Union and type(None) in get_args(inner):
-        raise NestedOptionalError(path)
-    return inner, True
+    return non_none_args[0], True
 
 
 def _is_nested_model(annotation: Any) -> bool:
