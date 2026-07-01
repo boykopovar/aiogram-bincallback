@@ -21,17 +21,17 @@ class MissingBitsError(DefinitionError):
         super().__init__(f"field '{path}' requires an explicit bits= argument to bfield()")
 
 
-class MissingBinOrderError(DefinitionError):
-    def __init__(self, path: str) -> None:
-        super().__init__(f"enum field '{path}' requires an explicit bin_order= argument to bfield()")
-
-
 class InsufficientBitsError(DefinitionError):
     def __init__(self, path: str, bits: int, required_bits: int) -> None:
         super().__init__(
             f"enum field '{path}' reserves {bits} bits, "
             f"but its bin_order needs at least {required_bits} bits"
         )
+
+
+class DuplicateBinOrderError(DefinitionError):
+    def __init__(self, path: str, member_name: str) -> None:
+        super().__init__(f"enum field '{path}' lists member '{member_name}' more than once in bin_order")
 
 
 class SignedNotApplicableError(DefinitionError):

@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+from typing import Generic
 from typing import List
 from typing import Optional
 from typing import Sequence
+from typing import Set
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 from typing import get_args
 from typing import get_origin
@@ -20,8 +23,8 @@ from aiogram_bincallback.core import BIN_SIGNED_KEY
 from aiogram_bincallback.core import CircularNestingError
 from aiogram_bincallback.core import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core import DEFAULT_INT_BITS
+from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import InsufficientBitsError
-from aiogram_bincallback.core import MissingBinOrderError
 from aiogram_bincallback.core import MissingBitsError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
@@ -29,6 +32,8 @@ from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 
 _PATH_SEPARATOR = "."
+
+EnumT = TypeVar("EnumT", bound=Enum)
 
 
 @dataclass(frozen=True)
@@ -48,12 +53,12 @@ class IntFieldCodec:
 
 
 @dataclass(frozen=True)
-class EnumFieldCodec:
+class EnumFieldCodec(Generic[EnumT]):
     name: str
     path: str
     bits: int
-    bin_order: Tuple[str, ...]
-    enum_cls: type
+    bin_order: Tuple[EnumT, ...]
+    enum_cls: Type[EnumT]
     optional: bool
 
 
@@ -197,25 +202,42 @@ def _build_enum_codec(
     field_name: str,
     path: str,
     bits: Optional[int],
-    bin_order: Optional[Sequence[str]],
-    enum_cls: type,
+    bin_order: Optional[Sequence[EnumT]],
+    enum_cls: Type[EnumT],
     optional: bool,
 ) -> EnumFieldCodec:
-    if bin_order is None:
-        raise MissingBinOrderError(path)
     if bits is None:
         raise MissingBitsError(path)
-    required_bits = _minimum_bits_for_count(len(bin_order))
-    if 2 ** bits < len(bin_order):
+    resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
+    required_bits = _minimum_bits_for_count(len(resolved_bin_order))
+    if 2 ** bits < len(resolved_bin_order):
         raise InsufficientBitsError(path, bits, required_bits)
     return EnumFieldCodec(
         name=field_name,
         path=path,
         bits=bits,
-        bin_order=tuple(bin_order),
+        bin_order=resolved_bin_order,
         enum_cls=enum_cls,
         optional=optional,
     )
+
+
+def _resolve_bin_order(
+    path: str,
+    bin_order: Optional[Sequence[EnumT]],
+    enum_cls: Type[EnumT],
+) -> Tuple[EnumT, ...]:
+    members = tuple(enum_cls) if bin_order is None else tuple(bin_order)
+    _check_no_duplicate_members(path, members)
+    return members
+
+
+def _check_no_duplicate_members(path: str, members: Sequence[Enum]) -> None:
+    seen_names: Set[str] = set()
+    for member in members:
+        if member.name in seen_names:
+            raise DuplicateBinOrderError(path, member.name)
+        seen_names.add(member.name)
 
 
 def _minimum_bits_for_count(count: int) -> int:

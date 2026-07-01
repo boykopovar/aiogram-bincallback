@@ -60,7 +60,7 @@ def _write_field(writer: BitWriter, codec: FieldCodec, value: Any) -> None:
             writer.write_uint(value, codec.bits)
         return
     if isinstance(codec, EnumFieldCodec):
-        writer.write_uint(codec.bin_order.index(value.name), codec.bits)
+        writer.write_uint(codec.bin_order.index(value), codec.bits)
         return
     _encode_fields_into(codec.plan, value, writer)
 
@@ -71,7 +71,7 @@ def _read_field(reader: BitReader, codec: FieldCodec) -> Any:
     if isinstance(codec, IntFieldCodec):
         return reader.read_int(codec.bits) if codec.signed else reader.read_uint(codec.bits)
     if isinstance(codec, EnumFieldCodec):
-        return codec.enum_cls[codec.bin_order[reader.read_uint(codec.bits)]]
+        return codec.bin_order[reader.read_uint(codec.bits)]
     return _decode_fields_from(codec.plan, reader)
 
 

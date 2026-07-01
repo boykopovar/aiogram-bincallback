@@ -16,7 +16,7 @@ class Status(str, Enum):
 
 def test_enum_field_without_bits_raises_missing_bits_error():
     class Model(BaseModel):
-        status: Status = planning_bfield(bin_order=("ACTIVE", "DONE"))
+        status: Status = planning_bfield(bin_order=(Status.ACTIVE, Status.DONE))
 
     with pytest.raises(MissingBitsError) as excinfo:
         build_codec_plan(Model)

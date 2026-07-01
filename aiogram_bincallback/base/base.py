@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 from typing import Sequence
 
@@ -27,7 +28,7 @@ _DEFAULT_WIRE_CODEC: WireCodec = Base64WireCodec()
 def bfield(
     *,
     bits: Optional[int] = None,
-    bin_order: Optional[Sequence[str]] = None,
+    bin_order: Optional[Sequence[Enum]] = None,
     signed: Optional[bool] = None,
     **kw: object,
 ) -> FieldInfo:

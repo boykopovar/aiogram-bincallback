@@ -4,9 +4,9 @@ from aiogram_bincallback.core import BinaryCallbackError
 from aiogram_bincallback.core import CircularNestingError
 from aiogram_bincallback.core import DecodeError
 from aiogram_bincallback.core import DefinitionError
+from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import EncodeError
 from aiogram_bincallback.core import InsufficientBitsError
-from aiogram_bincallback.core import MissingBinOrderError
 from aiogram_bincallback.core import MissingBitsError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
@@ -26,9 +26,9 @@ __all__ = (
     "CircularNestingError",
     "DecodeError",
     "DefinitionError",
+    "DuplicateBinOrderError",
     "EncodeError",
     "InsufficientBitsError",
-    "MissingBinOrderError",
     "MissingBitsError",
     "MissingSignedError",
     "NestedCallbackDataError",

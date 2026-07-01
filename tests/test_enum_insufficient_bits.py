@@ -18,7 +18,10 @@ class Direction(Enum):
 
 def test_enum_field_with_too_few_bits_raises_insufficient_bits_error():
     class Model(BaseModel):
-        direction: Direction = planning_bfield(bits=1, bin_order=("UP", "DOWN", "LEFT", "RIGHT"))
+        direction: Direction = planning_bfield(
+            bits=1,
+            bin_order=(Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT),
+        )
 
     with pytest.raises(InsufficientBitsError) as excinfo:
         build_codec_plan(Model)
@@ -28,7 +31,10 @@ def test_enum_field_with_too_few_bits_raises_insufficient_bits_error():
 
 def test_enum_field_with_exactly_enough_bits_does_not_raise():
     class Model(BaseModel):
-        direction: Direction = planning_bfield(bits=2, bin_order=("UP", "DOWN", "LEFT", "RIGHT"))
+        direction: Direction = planning_bfield(
+            bits=2,
+            bin_order=(Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT),
+        )
 
     plan = build_codec_plan(Model)
 
@@ -36,11 +42,11 @@ def test_enum_field_with_exactly_enough_bits_does_not_raise():
 
 
 def test_enum_field_with_single_member_and_zero_bits_is_valid():
-    class Direction(Enum):
+    class SingleMember(Enum):
         UP = "up"
 
     class Model(BaseModel):
-        direction: Direction = planning_bfield(bits=0, bin_order=("UP",))
+        direction: SingleMember = planning_bfield(bits=0, bin_order=(SingleMember.UP,))
 
     plan = build_codec_plan(Model)
 
@@ -48,11 +54,11 @@ def test_enum_field_with_single_member_and_zero_bits_is_valid():
 
 
 def test_enum_field_with_single_member_and_negative_bits_raises_insufficient_bits_error():
-    class Direction(Enum):
+    class SingleMember(Enum):
         UP = "up"
 
     class Model(BaseModel):
-        direction: Direction = planning_bfield(bits=-1, bin_order=("UP",))
+        direction: SingleMember = planning_bfield(bits=-1, bin_order=(SingleMember.UP,))
 
     with pytest.raises(InsufficientBitsError):
         build_codec_plan(Model)

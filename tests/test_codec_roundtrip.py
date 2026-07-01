@@ -63,7 +63,21 @@ def test_optional_field_absent_skips_its_payload_bits():
 
 def test_enum_field_roundtrips_via_bin_order_index():
     class Model(BaseModel):
-        status: Status = planning_bfield(bits=4, bin_order=("ACTIVE", "DONE"))
+        status: Status = planning_bfield(bits=4, bin_order=(Status.ACTIVE, Status.DONE))
+
+    plan = build_codec_plan(Model)
+    instance = Model(status=Status.DONE)
+
+    data = encode_fields(plan, instance)
+    decoded, new_bit_position = decode_fields(plan, data, 0)
+
+    assert decoded == {"status": Status.DONE}
+    assert new_bit_position == 4
+
+
+def test_enum_field_without_bin_order_roundtrips_using_declaration_order():
+    class Model(BaseModel):
+        status: Status = planning_bfield(bits=4)
 
     plan = build_codec_plan(Model)
     instance = Model(status=Status.DONE)
