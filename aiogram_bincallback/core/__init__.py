@@ -6,8 +6,6 @@ from aiogram_bincallback.core.constants import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core.constants import DEFAULT_INT_BITS
 from aiogram_bincallback.core.constants import HEADER_BITS
 from aiogram_bincallback.core.constants import MAX_CALLBACK_LENGTH
-from aiogram_bincallback.core.constants import MAX_PAYLOAD_BITS
-from aiogram_bincallback.core.constants import MAX_TOTAL_BITS
 from aiogram_bincallback.core.constants import PREFIX_BITS
 from aiogram_bincallback.core.constants import VERSION_BITS
 from aiogram_bincallback.core.exceptions import BinaryCallbackError
@@ -30,7 +28,6 @@ from aiogram_bincallback.core.exceptions import ValueOverflowError
 from aiogram_bincallback.core.exceptions import VersionMismatchError
 
 __all__ = (
-    "BASE93_ALPHABET",
     "BIN_BITS_KEY",
     "BIN_ORDER_KEY",
     "BIN_PLAN_ATTR",
@@ -39,8 +36,6 @@ __all__ = (
     "DEFAULT_INT_BITS",
     "HEADER_BITS",
     "MAX_CALLBACK_LENGTH",
-    "MAX_PAYLOAD_BITS",
-    "MAX_TOTAL_BITS",
     "PREFIX_BITS",
     "VERSION_BITS",
     "BinaryCallbackError",

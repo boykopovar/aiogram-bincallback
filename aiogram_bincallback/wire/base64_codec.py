@@ -1,6 +1,0 @@
-class Base64WireCodec:
-    def encode(self, data: bytes) -> str:
-        ...
-
-    def decode(self, packed: str) -> bytes:
-        ...

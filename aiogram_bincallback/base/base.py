@@ -19,10 +19,10 @@ from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
-from aiogram_bincallback.wire import Base64WireCodec
+from aiogram_bincallback.wire import Base93WireCodec
 from aiogram_bincallback.wire import WireCodec
 
-_DEFAULT_WIRE_CODEC: WireCodec = Base64WireCodec()
+_WIRE_CODEC: WireCodec = Base93WireCodec()
 
 
 def bfield(
@@ -40,7 +40,6 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         cls,
         prefix: Optional[int] = None,
         version: int = 1,
-        wire_codec: WireCodec = _DEFAULT_WIRE_CODEC,
         **kw: object,
     ) -> None:
         ...
