@@ -4,8 +4,8 @@ from typing import Tuple
 
 from pydantic import BaseModel
 
-from aiogram_bincallback.bitstream import BitReader
-from aiogram_bincallback.bitstream import BitWriter
+from aiogram_bincallback.bitstream.bitstream import BitReader
+from aiogram_bincallback.bitstream.bitstream import BitWriter
 from aiogram_bincallback.planning import CodecPlan
 
 

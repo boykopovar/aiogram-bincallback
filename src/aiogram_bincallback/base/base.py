@@ -5,21 +5,23 @@ from aiogram.filters.callback_data import CallbackData
 from pydantic import Field
 from pydantic.fields import FieldInfo
 
-from aiogram_bincallback.constants import BIN_BITS_KEY
-from aiogram_bincallback.constants import BIN_ORDER_KEY
-from aiogram_bincallback.constants import BIN_SIGNED_KEY
-from aiogram_bincallback.exceptions import BinaryCallbackError
-from aiogram_bincallback.exceptions import DecodeError
-from aiogram_bincallback.exceptions import PrefixMismatchError
-from aiogram_bincallback.exceptions import VersionMismatchError
+from aiogram_bincallback.core import BIN_BITS_KEY
+from aiogram_bincallback.core import BIN_ORDER_KEY
+from aiogram_bincallback.core import BIN_SIGNED_KEY
+from aiogram_bincallback.core import BinaryCallbackError
+from aiogram_bincallback.core import DecodeError
+from aiogram_bincallback.core import PrefixMismatchError
+from aiogram_bincallback.core import VersionMismatchError
 from aiogram_bincallback.header import check_size_limit
 from aiogram_bincallback.header import decode_header
 from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
-from aiogram_bincallback.wire import wire_decode
-from aiogram_bincallback.wire import wire_encode
+from aiogram_bincallback.wire import Base64WireCodec
+from aiogram_bincallback.wire import WireCodec
+
+_DEFAULT_WIRE_CODEC: WireCodec = Base64WireCodec()
 
 
 def bfield(
@@ -33,7 +35,13 @@ def bfield(
 
 
 class BinaryCallbackData(CallbackData, prefix="_bin_"):
-    def __init_subclass__(cls, prefix: Optional[int] = None, version: int = 1, **kw: object) -> None:
+    def __init_subclass__(
+        cls,
+        prefix: Optional[int] = None,
+        version: int = 1,
+        wire_codec: WireCodec = _DEFAULT_WIRE_CODEC,
+        **kw: object,
+    ) -> None:
         ...
 
     def pack(self) -> str:
