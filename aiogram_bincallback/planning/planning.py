@@ -29,7 +29,7 @@ from aiogram_bincallback.core import NestedOptionalError
 from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 
-_PATH_SEPARATOR = ""
+_PATH_SEPARATOR = "."
 
 
 @dataclass(frozen=True)
