@@ -70,3 +70,24 @@ def test_signed_passed_for_nested_basemodel_raises_signed_not_applicable_error()
         build_codec_plan(Outer)
 
     assert "inner" in str(excinfo.value)
+
+
+def test_signed_passed_for_enum_field_raises_signed_not_applicable_error_through_binary_callback_data():
+    from aiogram_bincallback import BinaryCallbackData
+    from aiogram_bincallback import bfield
+
+    with pytest.raises(SignedNotApplicableError):
+        class EnumSignedCb(BinaryCallbackData, prefix=9501, version=1):
+            status: Status = bfield(bits=4, signed=False, bin_order=(Status.ACTIVE, Status.DONE))
+
+
+def test_signed_passed_for_nested_basemodel_raises_signed_not_applicable_error_through_binary_callback_data():
+    from aiogram_bincallback import BinaryCallbackData
+    from aiogram_bincallback import bfield
+
+    class InnerModel(BaseModel):
+        value: int = bfield(bits=4, signed=False)
+
+    with pytest.raises(SignedNotApplicableError):
+        class NestedSignedCb(BinaryCallbackData, prefix=9502, version=1):
+            inner: InnerModel = bfield(signed=False)

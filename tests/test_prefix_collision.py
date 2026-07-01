@@ -19,6 +19,18 @@ def test_registering_two_classes_with_same_prefix_raises_prefix_collision_error(
     assert "9001" in str(excinfo.value)
 
 
+def test_same_prefix_different_version_does_not_collide_but_same_prefix_same_version_does():
+    class BaseVersionCb(BinaryCallbackData, prefix=9002, version=1):
+        value: int = bfield(bits=8, signed=False)
+
+    class OtherVersionCb(BinaryCallbackData, prefix=9002, version=2):
+        value: int = bfield(bits=8, signed=False)
+
+    with pytest.raises(PrefixCollisionError):
+        class CollidingCb(BinaryCallbackData, prefix=9002, version=1):
+            other: int = bfield(bits=8, signed=False)
+
+
 def test_registering_two_classes_with_different_prefixes_does_not_raise():
     class FirstUniqueCb(BinaryCallbackData, prefix=9101, version=1):
         value: int = bfield(bits=8, signed=False)
@@ -28,6 +40,21 @@ def test_registering_two_classes_with_different_prefixes_does_not_raise():
 
     assert FirstUniqueCb.__bin_prefix__ == 9101
     assert SecondUniqueCb.__bin_prefix__ == 9102
+
+
+def test_registering_three_versions_of_same_prefix_does_not_raise():
+    class VersionOneOfThreeCb(BinaryCallbackData, prefix=9103, version=1):
+        value: int = bfield(bits=8, signed=False)
+
+    class VersionTwoOfThreeCb(BinaryCallbackData, prefix=9103, version=2):
+        value: int = bfield(bits=8, signed=False)
+
+    class VersionThreeOfThreeCb(BinaryCallbackData, prefix=9103, version=3):
+        value: int = bfield(bits=8, signed=False)
+
+    assert VersionOneOfThreeCb.__bin_version__ == 1
+    assert VersionTwoOfThreeCb.__bin_version__ == 2
+    assert VersionThreeOfThreeCb.__bin_version__ == 3
 
 
 def test_nesting_binary_callback_data_inside_another_raises_nested_callback_data_error():
