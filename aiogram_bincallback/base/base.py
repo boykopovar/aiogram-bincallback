@@ -46,6 +46,9 @@ def bfield(
 
 
 class BinaryCallbackData(CallbackData, prefix="_bin_"):
+    __bin_prefix__: Optional[int] = None
+    __bin_version__: int = 1
+
     def __init_subclass__(
         cls,
         prefix: Optional[int] = None,
@@ -53,10 +56,16 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         **kw: object,
     ) -> None:
         super().__init_subclass__(prefix=make_aiogram_prefix(prefix), **kw)
-        if prefix is not None:
-            cls.__bin_prefix__ = prefix
-            register(prefix, cls)
+        cls.__bin_prefix__ = prefix
         cls.__bin_version__ = version
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kw: object) -> None:
+        super().__pydantic_init_subclass__(**kw)
+        if cls is BinaryCallbackData:
+            return
+        if cls.__bin_prefix__ is not None:
+            register(cls.__bin_prefix__, cls.__bin_version__, cls)
         cls.__bin_plan__ = build_codec_plan(cls)
         check_size_limit(cls.__bin_plan__, MAX_PAYLOAD_BITS)
 

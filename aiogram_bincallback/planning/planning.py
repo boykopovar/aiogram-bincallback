@@ -119,6 +119,9 @@ def _build_field_codec(
     if hasattr(annotation, BIN_PLAN_ATTR):
         raise NestedCallbackDataError(path)
     if _is_nested_model(annotation):
+        extra = field_info.json_schema_extra or {}
+        if extra.get(BIN_SIGNED_KEY) is not None:
+            raise SignedNotApplicableError(path, annotation)
         nested_plan = build_codec_plan(annotation, path, visited)
         return NestedFieldCodec(
             name=field_name,
@@ -164,7 +167,7 @@ def _build_primitive_codec(
     if annotation is int:
         return _build_int_codec(field_name, path, bits, signed, optional)
     if _is_enum_type(annotation):
-        return _build_enum_codec(field_name, path, bits, bin_order, annotation, optional)
+        return _build_enum_codec(field_name, path, bits, signed, bin_order, annotation, optional)
     raise UnsupportedFieldTypeError(path, annotation)
 
 
@@ -202,10 +205,13 @@ def _build_enum_codec(
     field_name: str,
     path: str,
     bits: Optional[int],
+    signed: Optional[bool],
     bin_order: Optional[Sequence[EnumT]],
     enum_cls: Type[EnumT],
     optional: bool,
 ) -> EnumFieldCodec:
+    if signed is not None:
+        raise SignedNotApplicableError(path, enum_cls)
     if bits is None:
         raise MissingBitsError(path)
     resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
