@@ -1,5 +1,6 @@
 from aiogram_bincallback.core.constants import BIN_BITS_KEY
 from aiogram_bincallback.core.constants import BIN_ORDER_KEY
+from aiogram_bincallback.core.constants import BIN_PLAN_ATTR
 from aiogram_bincallback.core.constants import BIN_SIGNED_KEY
 from aiogram_bincallback.core.constants import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core.constants import DEFAULT_INT_BITS
@@ -33,6 +34,7 @@ __all__ = (
     "BASE93_ALPHABET",
     "BIN_BITS_KEY",
     "BIN_ORDER_KEY",
+    "BIN_PLAN_ATTR",
     "BIN_SIGNED_KEY",
     "DEFAULT_BOOL_BITS",
     "DEFAULT_INT_BITS",

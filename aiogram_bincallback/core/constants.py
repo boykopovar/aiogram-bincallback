@@ -14,3 +14,5 @@ BIN_SIGNED_KEY = "bin_signed"
 
 DEFAULT_BOOL_BITS = 1
 DEFAULT_INT_BITS = 32
+
+BIN_PLAN_ATTR = "__bin_plan__"
