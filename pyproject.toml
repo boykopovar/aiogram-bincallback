@@ -15,7 +15,23 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-cov>=5.0",
 ]
 
 [tool.setuptools.packages.find]
 include = ["aiogram_bincallback*"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=aiogram_bincallback --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["aiogram_bincallback"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "def __repr__",
+]
