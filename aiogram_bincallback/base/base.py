@@ -36,13 +36,17 @@ def bfield(
     bits: Optional[int] = None,
     bin_order: Optional[Sequence[Enum]] = None,
     signed: Optional[bool] = None,
+    default: object = PydanticUndefined,
+    default_factory: Optional[Callable[[], object]] = None,
     **kw: object,
 ) -> FieldInfo:
     extra = kw.pop("json_schema_extra", {}) or {}
     extra[BIN_BITS_KEY] = bits
     extra[BIN_ORDER_KEY] = bin_order
     extra[BIN_SIGNED_KEY] = signed
-    return Field(json_schema_extra=extra, **kw)
+    if default_factory is not None:
+        return Field(default_factory=default_factory, json_schema_extra=extra, **kw)
+    return Field(default=default, json_schema_extra=extra, **kw)
 
 
 class BinaryCallbackData(CallbackData, prefix="_bin_"):
