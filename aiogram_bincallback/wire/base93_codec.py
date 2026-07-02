@@ -1,11 +1,12 @@
 from aiogram_bincallback.core.exceptions import PayloadCorruptError
 from aiogram_bincallback.wire.constants import BASE93_ALPHABET
 from aiogram_bincallback.wire.constants import BASE93_RADIX
+from aiogram_bincallback.wire.protocol import IWireCodec
 
 _LENGTH_MARKER_BIT_COUNT = 8
 
 
-class Base93WireCodec:
+class Base93WireCodec(IWireCodec):
     def encode(self, data: bytes) -> str:
         marker = 1 << (len(data) * _LENGTH_MARKER_BIT_COUNT)
         value = marker | self._bytes_to_int(data)
@@ -13,7 +14,7 @@ class Base93WireCodec:
         while value > 0:
             value, remainder = divmod(value, BASE93_RADIX)
             digits.append(BASE93_ALPHABET[remainder])
-        if not digits:  # pragma: no cover
+        if not digits:
             digits.append(BASE93_ALPHABET[0])
         return "".join(reversed(digits))
 
@@ -30,7 +31,7 @@ class Base93WireCodec:
         length_bits = (marker_bit_length - 1) - ((marker_bit_length - 1) % _LENGTH_MARKER_BIT_COUNT)
         length_bytes = length_bits // _LENGTH_MARKER_BIT_COUNT
         marker = 1 << (length_bytes * _LENGTH_MARKER_BIT_COUNT)
-        if value < marker or value >= marker << _LENGTH_MARKER_BIT_COUNT:  # pragma: no cover
+        if value < marker or value >= marker << _LENGTH_MARKER_BIT_COUNT:
             raise PayloadCorruptError("payload length marker bit is corrupt")
         return self._int_to_bytes(value - marker, length_bytes)
 

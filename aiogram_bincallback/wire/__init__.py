@@ -1,9 +1,9 @@
 from aiogram_bincallback.wire.base93_codec import Base93WireCodec
 from aiogram_bincallback.wire.constants import MAX_PAYLOAD_BITS
-from aiogram_bincallback.wire.protocol import WireCodec
+from aiogram_bincallback.wire.protocol import IWireCodec
 
 __all__ = (
     "Base93WireCodec",
     "MAX_PAYLOAD_BITS",
-    "WireCodec",
+    "IWireCodec",
 )

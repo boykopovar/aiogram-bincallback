@@ -26,9 +26,9 @@ from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
 from aiogram_bincallback.wire import Base93WireCodec
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
-from aiogram_bincallback.wire import WireCodec
+from aiogram_bincallback.wire import IWireCodec
 
-_WIRE_CODEC: WireCodec = Base93WireCodec()
+_WIRE_CODEC: IWireCodec = Base93WireCodec()
 
 
 def bfield(

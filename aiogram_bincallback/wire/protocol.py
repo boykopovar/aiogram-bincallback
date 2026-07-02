@@ -1,9 +1,12 @@
-from typing import Protocol
+from abc import ABC
+from abc import abstractmethod
 
 
-class WireCodec(Protocol):
-    def encode(self, data: bytes) -> str:  # pragma: no cover
-        ...
+class IWireCodec(ABC):
+    @abstractmethod
+    def encode(self, data: bytes) -> str:
+        raise NotImplementedError
 
-    def decode(self, packed: str) -> bytes:  # pragma: no cover
-        ...
+    @abstractmethod
+    def decode(self, packed: str) -> bytes:
+        raise NotImplementedError
