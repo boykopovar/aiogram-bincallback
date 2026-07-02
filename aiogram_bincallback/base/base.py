@@ -51,8 +51,8 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
 
     def __init_subclass__(
         cls,
-        prefix: Optional[int] = None,
-        version: int = 1,
+        prefix: int,
+        version: int,
         **kw: object,
     ) -> None:
         super().__init_subclass__(prefix=make_aiogram_prefix(prefix), **kw)
