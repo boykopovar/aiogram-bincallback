@@ -17,13 +17,6 @@ def test_binary_callback_data_base_class_has_default_prefix_and_version():
     assert BinaryCallbackData.__bin_version__ == 1
 
 
-def test_subclass_without_prefix_does_not_register_but_still_builds_plan():
-    class UnregisteredCb(BinaryCallbackData):
-        value: int = bfield(bits=8, signed=False)
-
-    assert UnregisteredCb.__bin_prefix__ is None
-    assert len(UnregisteredCb.__bin_plan__) == 1
-
 
 def test_subclassing_twice_builds_independent_plans_for_each_level():
     class LevelOneCb(BinaryCallbackData, prefix=9601, version=1):

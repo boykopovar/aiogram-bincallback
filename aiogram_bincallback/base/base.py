@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Callable
 from typing import Dict
 from typing import Optional
 from typing import Sequence
@@ -7,6 +7,7 @@ from typing import Sequence
 from aiogram.filters.callback_data import CallbackData
 from pydantic import Field
 from pydantic.fields import FieldInfo
+from pydantic_core import PydanticUndefined
 
 from aiogram_bincallback.codec import decode_fields
 from aiogram_bincallback.codec import encode_fields
