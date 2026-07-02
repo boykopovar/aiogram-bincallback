@@ -6,6 +6,12 @@ def test_binary_callback_data_base_class_has_no_bin_plan():
     assert "__bin_plan__" not in BinaryCallbackData.__dict__
 
 
+def test_pydantic_init_subclass_hook_returns_early_for_base_class_itself():
+    BinaryCallbackData.__pydantic_init_subclass__()
+
+    assert "__bin_plan__" not in BinaryCallbackData.__dict__
+
+
 def test_binary_callback_data_base_class_has_default_prefix_and_version():
     assert BinaryCallbackData.__bin_prefix__ is None
     assert BinaryCallbackData.__bin_version__ == 1
