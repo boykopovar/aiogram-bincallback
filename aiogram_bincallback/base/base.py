@@ -75,7 +75,7 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         try:
             raw = _WIRE_CODEC.decode(packed)
             prefix, version = decode_header(raw)
-        except BinaryCallbackError:
+        except (BinaryCallbackError, OverflowError):
             return None
 
         return BinCbHeader(
