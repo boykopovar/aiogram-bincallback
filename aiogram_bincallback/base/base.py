@@ -1,8 +1,9 @@
 from enum import Enum
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 from typing import Dict
 from typing import Optional
 from typing import Sequence
+from typing import NamedTuple
 
 from aiogram.filters.callback_data import CallbackData
 from pydantic import Field
@@ -28,6 +29,11 @@ from aiogram_bincallback.registry import register
 from aiogram_bincallback.wire import Base93WireCodec
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
 from aiogram_bincallback.wire import IWireCodec
+
+
+class BinCbHeader(NamedTuple):
+    prefix: int
+    version: int
 
 _WIRE_CODEC: IWireCodec = Base93WireCodec()
 
@@ -63,6 +69,16 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         super().__init_subclass__(prefix=make_aiogram_prefix(prefix), **kw)
         cls.__bin_prefix__ = prefix
         cls.__bin_version__ = version
+
+    @staticmethod
+    def get_header(packed: str) -> BinCbHeader:
+        raw = _WIRE_CODEC.decode(packed)
+        prefix, version = decode_header(raw)
+
+        return BinCbHeader(
+            prefix=prefix,
+            version=version,
+        )
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kw: object) -> None:
