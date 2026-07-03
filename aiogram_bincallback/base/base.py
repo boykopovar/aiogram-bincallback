@@ -71,9 +71,12 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         cls.__bin_version__ = version
 
     @staticmethod
-    def get_header(packed: str) -> BinCbHeader:
-        raw = _WIRE_CODEC.decode(packed)
-        prefix, version = decode_header(raw)
+    def get_header(packed: str) -> Optional[BinCbHeader]:
+        try:
+            raw = _WIRE_CODEC.decode(packed)
+            prefix, version = decode_header(raw)
+        except BinaryCallbackError:
+            return None
 
         return BinCbHeader(
             prefix=prefix,
