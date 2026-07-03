@@ -1,6 +1,7 @@
 import pytest
 from pydantic import BaseModel
 
+from aiogram_bincallback import BinaryCallbackData
 from aiogram_bincallback.core import HEADER_BITS
 from aiogram_bincallback.core import PREFIX_BITS
 from aiogram_bincallback.core import SizeLimitExceededError
@@ -71,3 +72,17 @@ def test_check_size_limit_allows_plan_exactly_at_budget():
     plan = build_codec_plan(Model)
 
     check_size_limit(plan, max_payload_bits=8)
+
+
+def test_is_valid_raises_for_base_class():
+    with pytest.raises(TypeError, match="is_valid\\(\\) must be called on a subclass"):
+        BinaryCallbackData.is_valid("anything")
+
+
+def test_is_valid_returns_true_for_matching_callback():
+    class TestCallback(BinaryCallbackData, prefix=7, version=1):
+        pass
+
+    packed = TestCallback().pack()
+
+    assert TestCallback.is_valid(packed) is True

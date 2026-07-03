@@ -70,8 +70,8 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         cls.__bin_prefix__ = prefix
         cls.__bin_version__ = version
 
-    @staticmethod
-    def get_header(packed: str) -> Optional[BinCbHeader]:
+    @classmethod
+    def get_header(cls, packed: str) -> Optional[BinCbHeader]:
         try:
             raw = _WIRE_CODEC.decode(packed)
             prefix, version = decode_header(raw)
@@ -82,6 +82,19 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
             prefix=prefix,
             version=version,
         )
+
+    @classmethod
+    def is_valid(cls, packed: str) -> bool:
+        if cls is BinaryCallbackData:
+            raise TypeError("is_valid() must be called on a subclass")
+
+        header = cls.get_header(packed)
+        return (
+                header is not None
+                and header.prefix == cls.__bin_prefix__
+                and header.version == cls.__bin_version__
+        )
+
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kw: object) -> None:
