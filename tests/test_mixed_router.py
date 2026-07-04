@@ -77,4 +77,4 @@ def test_unpack_wraps_unexpected_non_binary_callback_errors_as_decode_error():
         value: int = bfield(bits=8, signed=False)
 
     with pytest.raises((DecodeError, PayloadCorruptError)):
-        WrapCb.unpack("not a valid base93 payload \" \\")
+        WrapCb.unpack("not a valid base128 payload \" \\")

@@ -1,30 +1,30 @@
 from aiogram_bincallback.core.exceptions import PayloadCorruptError
-from aiogram_bincallback.wire.constants import BASE93_ALPHABET
-from aiogram_bincallback.wire.constants import BASE93_RADIX
+from aiogram_bincallback.wire.constants import BASE128_ALPHABET
+from aiogram_bincallback.wire.constants import BASE128_RADIX
 from aiogram_bincallback.wire.protocol import IWireCodec
 
 _LENGTH_MARKER_BIT_COUNT = 8
 
 
-class Base93WireCodec(IWireCodec):
+class Base128WireCodec(IWireCodec):
     def encode(self, data: bytes) -> str:
         marker = 1 << (len(data) * _LENGTH_MARKER_BIT_COUNT)
         value = marker | self._bytes_to_int(data)
         digits = []
         while value > 0:
-            value, remainder = divmod(value, BASE93_RADIX)
-            digits.append(BASE93_ALPHABET[remainder])
+            value, remainder = divmod(value, BASE128_RADIX)
+            digits.append(BASE128_ALPHABET[remainder])
         if not digits:
-            digits.append(BASE93_ALPHABET[0])
+            digits.append(BASE128_ALPHABET[0])
         return "".join(reversed(digits))
 
     def decode(self, packed: str) -> bytes:
         value = 0
         for character in packed:
-            digit = BASE93_ALPHABET.find(character)
+            digit = BASE128_ALPHABET.find(character)
             if digit < 0:
-                raise PayloadCorruptError(f"character {character!r} is outside the base93 alphabet")
-            value = value * BASE93_RADIX + digit
+                raise PayloadCorruptError(f"character {character!r} is outside the base128 alphabet")
+            value = value * BASE128_RADIX + digit
         marker_bit_length = value.bit_length()
         if marker_bit_length == 0:
             raise PayloadCorruptError("payload is missing its length marker bit")

@@ -26,7 +26,7 @@ from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
-from aiogram_bincallback.wire import Base93WireCodec
+from aiogram_bincallback.wire import Base128WireCodec
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
 from aiogram_bincallback.wire import IWireCodec
 
@@ -35,7 +35,7 @@ class BinCbHeader(NamedTuple):
     prefix: int
     version: int
 
-_WIRE_CODEC: IWireCodec = Base93WireCodec()
+_WIRE_CODEC: IWireCodec = Base128WireCodec()
 
 
 def bfield(
