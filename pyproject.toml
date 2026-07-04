@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiogram-bincallback"
-version = "0.1.7"
+version = "0.1.8"
 description = "Binary CallbackData serialization for aiogram 3.x"
 requires-python = ">=3.8"
 dependencies = [
@@ -15,7 +15,23 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-cov>=5.0",
 ]
 
 [tool.setuptools.packages.find]
 include = ["aiogram_bincallback*"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=aiogram_bincallback --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["aiogram_bincallback"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "def __repr__",
+]

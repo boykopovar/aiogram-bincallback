@@ -12,6 +12,7 @@ from aiogram_bincallback.core.constants import VERSION_BITS
 from aiogram_bincallback.core.exceptions import BinaryCallbackError
 from aiogram_bincallback.core.exceptions import CircularNestingError
 from aiogram_bincallback.core.exceptions import DecodeError
+from aiogram_bincallback.core.exceptions import DecryptionError
 from aiogram_bincallback.core.exceptions import DefinitionError
 from aiogram_bincallback.core.exceptions import DuplicateBinOrderError
 from aiogram_bincallback.core.exceptions import EncodeError
@@ -43,6 +44,7 @@ __all__ = (
     "BinaryCallbackError",
     "CircularNestingError",
     "DecodeError",
+    "DecryptionError",
     "DefinitionError",
     "DuplicateBinOrderError",
     "EncodeError",

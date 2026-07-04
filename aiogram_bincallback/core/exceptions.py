@@ -94,3 +94,8 @@ class VersionMismatchError(DecodeError):
 class PayloadCorruptError(DecodeError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"payload is corrupt: {reason}")
+
+
+class DecryptionError(DecodeError):
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"payload could not be decrypted: {reason}")

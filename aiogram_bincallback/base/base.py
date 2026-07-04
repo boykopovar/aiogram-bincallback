@@ -12,6 +12,8 @@ from pydantic_core import PydanticUndefined
 
 from aiogram_bincallback.codec import decode_fields
 from aiogram_bincallback.codec import encode_fields
+from aiogram_bincallback.config import get_cipher
+from aiogram_bincallback.config import get_wire_codec
 from aiogram_bincallback.core import BIN_BITS_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_SIGNED_KEY
@@ -26,16 +28,12 @@ from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
-from aiogram_bincallback.wire import Base128WireCodec
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
-from aiogram_bincallback.wire import IWireCodec
 
 
 class BinCbHeader(NamedTuple):
     prefix: int
     version: int
-
-_WIRE_CODEC: IWireCodec = Base128WireCodec()
 
 
 def bfield(
@@ -73,9 +71,11 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
     @classmethod
     def get_header(cls, packed: str) -> Optional[BinCbHeader]:
         try:
-            raw = _WIRE_CODEC.decode(packed)
+            wire_codec = get_wire_codec()
+            cipher = get_cipher()
+            raw = cipher.decrypt(wire_codec.decode(packed))
             prefix, version = decode_header(raw)
-        except (BinaryCallbackError, OverflowError):
+        except Exception:
             return None
 
         return BinCbHeader(
@@ -109,12 +109,13 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
     def pack(self) -> str:
         header = encode_header(self.__bin_prefix__, self.__bin_version__)
         payload = encode_fields(self.__bin_plan__, self)
-        return _WIRE_CODEC.encode(header + payload)
+        raw = get_cipher().encrypt(header + payload)
+        return get_wire_codec().encode(raw)
 
     @classmethod
     def unpack(cls, packed: str) -> "BinaryCallbackData":
         try:
-            raw = _WIRE_CODEC.decode(packed)
+            raw = get_cipher().decrypt(get_wire_codec().decode(packed))
             prefix, version = decode_header(raw)
             if prefix != cls.__bin_prefix__:
                 raise PrefixMismatchError(prefix, cls.__bin_prefix__)
