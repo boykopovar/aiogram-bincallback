@@ -3,6 +3,8 @@ from typing import Any, Callable, Tuple
 from typing import Dict
 from typing import Optional
 from typing import Sequence
+from typing import Type
+from typing import TypeVar
 from typing import NamedTuple
 
 from aiogram.filters.callback_data import CallbackData
@@ -11,6 +13,7 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
 from aiogram_bincallback.codec import decode_fields
+from aiogram_bincallback.codec import describe_instance
 from aiogram_bincallback.codec import encode_fields
 from aiogram_bincallback.config import get_cipher
 from aiogram_bincallback.config import get_wire_codec
@@ -29,6 +32,8 @@ from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
+
+PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
 
 
 class BinCbHeader(NamedTuple):
@@ -111,6 +116,11 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         payload = encode_fields(self.__bin_plan__, self)
         raw = get_cipher().encrypt(header + payload)
         return get_wire_codec().encode(raw)
+
+    def describe(self, prefix_enum: Optional[Type[PrefixEnumT]] = None) -> str:
+        if self.__bin_prefix__ is None:
+            raise TypeError("describe() must be called on a subclass")
+        return describe_instance(self.__bin_plan__, self, self.__bin_prefix__, prefix_enum)
 
     @classmethod
     def unpack(cls, packed: str) -> "BinaryCallbackData":

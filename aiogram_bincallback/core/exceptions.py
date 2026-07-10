@@ -91,6 +91,11 @@ class VersionMismatchError(DecodeError):
         super().__init__(f"decoded version {actual_version} does not match expected version {expected_version}")
 
 
+class PrefixEnumMismatchError(BinaryCallbackError):
+    def __init__(self, prefix: int, enum_cls: object) -> None:
+        super().__init__(f"prefix {prefix} has no matching member in {enum_cls!r}")
+
+
 class PayloadCorruptError(DecodeError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"payload is corrupt: {reason}")

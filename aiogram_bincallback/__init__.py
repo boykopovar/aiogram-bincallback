@@ -14,6 +14,7 @@ from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
 from aiogram_bincallback.core import PayloadCorruptError
 from aiogram_bincallback.core import PrefixCollisionError
+from aiogram_bincallback.core import PrefixEnumMismatchError
 from aiogram_bincallback.core import PrefixMismatchError
 from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import SizeLimitExceededError
@@ -42,6 +43,7 @@ __all__ = (
     "NestedCallbackDataError",
     "PayloadCorruptError",
     "PrefixCollisionError",
+    "PrefixEnumMismatchError",
     "PrefixMismatchError",
     "SignedNotApplicableError",
     "SizeLimitExceededError",

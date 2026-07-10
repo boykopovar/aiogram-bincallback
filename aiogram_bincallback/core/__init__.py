@@ -5,6 +5,7 @@ from aiogram_bincallback.core.constants import BIN_PLAN_ATTR
 from aiogram_bincallback.core.constants import BIN_SIGNED_KEY
 from aiogram_bincallback.core.constants import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core.constants import DEFAULT_INT_BITS
+from aiogram_bincallback.core.constants import DESCRIBE_FIELD_SEPARATOR
 from aiogram_bincallback.core.constants import HEADER_BITS
 from aiogram_bincallback.core.constants import MAX_CALLBACK_LENGTH
 from aiogram_bincallback.core.constants import PREFIX_BITS
@@ -22,6 +23,7 @@ from aiogram_bincallback.core.exceptions import MissingSignedError
 from aiogram_bincallback.core.exceptions import NestedCallbackDataError
 from aiogram_bincallback.core.exceptions import PayloadCorruptError
 from aiogram_bincallback.core.exceptions import PrefixCollisionError
+from aiogram_bincallback.core.exceptions import PrefixEnumMismatchError
 from aiogram_bincallback.core.exceptions import PrefixMismatchError
 from aiogram_bincallback.core.exceptions import SignedNotApplicableError
 from aiogram_bincallback.core.exceptions import SizeLimitExceededError
@@ -37,6 +39,7 @@ __all__ = (
     "BIN_SIGNED_KEY",
     "DEFAULT_BOOL_BITS",
     "DEFAULT_INT_BITS",
+    "DESCRIBE_FIELD_SEPARATOR",
     "HEADER_BITS",
     "MAX_CALLBACK_LENGTH",
     "PREFIX_BITS",
@@ -54,6 +57,7 @@ __all__ = (
     "NestedCallbackDataError",
     "PayloadCorruptError",
     "PrefixCollisionError",
+    "PrefixEnumMismatchError",
     "PrefixMismatchError",
     "SignedNotApplicableError",
     "SizeLimitExceededError",

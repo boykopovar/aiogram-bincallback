@@ -1,12 +1,19 @@
+from enum import Enum
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
 from typing import Tuple
+from typing import Type
+from typing import TypeVar
 
 from pydantic import BaseModel
 
 from aiogram_bincallback.bitstream.bitstream import BitReader
 from aiogram_bincallback.bitstream.bitstream import BitWriter
 from aiogram_bincallback.core.constants import DEFAULT_BOOL_BITS
+from aiogram_bincallback.core.constants import DESCRIBE_FIELD_SEPARATOR
+from aiogram_bincallback.core.exceptions import PrefixEnumMismatchError
 from aiogram_bincallback.core.exceptions import ValueOverflowError
 from aiogram_bincallback.planning.planning import BoolFieldCodec
 from aiogram_bincallback.planning.planning import CodecPlan
@@ -14,6 +21,8 @@ from aiogram_bincallback.planning.planning import EnumFieldCodec
 from aiogram_bincallback.planning.planning import FieldCodec
 from aiogram_bincallback.planning.planning import IntFieldCodec
 from aiogram_bincallback.planning.planning import NestedFieldCodec
+
+PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
 
 
 def encode_fields(plan: CodecPlan, instance: BaseModel) -> bytes:
@@ -26,6 +35,43 @@ def decode_fields(plan: CodecPlan, data: bytes, start_bit: int) -> Tuple[Dict[st
     reader = BitReader(data, start_bit)
     values = _decode_fields_from(plan, reader)
     return values, reader.position_bits
+
+
+def describe_fields(plan: CodecPlan, instance: BaseModel) -> List[str]:
+    tokens: List[str] = []
+    for codec in plan:
+        value = getattr(instance, codec.name)
+        tokens.append(_describe_field(codec, value))
+    return tokens
+
+
+def describe_instance(
+    plan: CodecPlan,
+    instance: BaseModel,
+    prefix: int,
+    prefix_enum: Optional[Type[PrefixEnumT]],
+) -> str:
+    tokens = [_resolve_prefix_token(prefix, prefix_enum), *describe_fields(plan, instance)]
+    return DESCRIBE_FIELD_SEPARATOR.join(tokens)
+
+
+def _describe_field(codec: FieldCodec, value: Any) -> str:
+    if value is None:
+        return str(value)
+    if isinstance(codec, NestedFieldCodec):
+        return DESCRIBE_FIELD_SEPARATOR.join(describe_fields(codec.plan, value))
+    if isinstance(codec, EnumFieldCodec):
+        return value.name
+    return str(value)
+
+
+def _resolve_prefix_token(prefix: int, prefix_enum: Optional[Type[PrefixEnumT]]) -> str:
+    if prefix_enum is None:
+        return str(prefix)
+    for member in prefix_enum:
+        if member.value == prefix:
+            return member.name
+    raise PrefixEnumMismatchError(prefix, prefix_enum)
 
 
 def _encode_fields_into(plan: CodecPlan, instance: BaseModel, writer: BitWriter) -> None:
