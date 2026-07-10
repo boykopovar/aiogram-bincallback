@@ -6,7 +6,7 @@ from aiogram_bincallback import bfield
 
 
 def test_pack_raises_value_overflow_error_when_unsigned_value_exceeds_bits():
-    class UnsignedCb(BinaryCallbackData, prefix=2001, version=1):
+    class UnsignedCb(BinaryCallbackData, prefix=9701, version=1):
         value: int = bfield(bits=4, signed=False)
 
     instance = UnsignedCb.model_construct(value=16)
@@ -18,7 +18,7 @@ def test_pack_raises_value_overflow_error_when_unsigned_value_exceeds_bits():
 
 
 def test_pack_raises_value_overflow_error_when_signed_value_exceeds_positive_bound():
-    class SignedCb(BinaryCallbackData, prefix=2002, version=1):
+    class SignedCb(BinaryCallbackData, prefix=9702, version=1):
         value: int = bfield(bits=8, signed=True)
 
     instance = SignedCb.model_construct(value=128)
@@ -28,7 +28,7 @@ def test_pack_raises_value_overflow_error_when_signed_value_exceeds_positive_bou
 
 
 def test_pack_raises_value_overflow_error_when_signed_value_exceeds_negative_bound():
-    class SignedNegativeCb(BinaryCallbackData, prefix=2003, version=1):
+    class SignedNegativeCb(BinaryCallbackData, prefix=9703, version=1):
         value: int = bfield(bits=8, signed=True)
 
     instance = SignedNegativeCb.model_construct(value=-129)
@@ -38,7 +38,7 @@ def test_pack_raises_value_overflow_error_when_signed_value_exceeds_negative_bou
 
 
 def test_pack_succeeds_at_exact_unsigned_upper_boundary():
-    class BoundaryCb(BinaryCallbackData, prefix=2004, version=1):
+    class BoundaryCb(BinaryCallbackData, prefix=9704, version=1):
         value: int = bfield(bits=4, signed=False)
 
     instance = BoundaryCb(value=15)
@@ -54,7 +54,7 @@ def test_pack_raises_value_overflow_error_on_nested_model_field():
     class Inner(BaseModel):
         value: int = bfield(bits=4, signed=False)
 
-    class NestedOverflowCb(BinaryCallbackData, prefix=2005, version=1):
+    class NestedOverflowCb(BinaryCallbackData, prefix=9705, version=1):
         inner: Inner
 
     instance = NestedOverflowCb.model_construct(inner=Inner.model_construct(value=99))
