@@ -119,10 +119,22 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         raw = get_cipher().encrypt(header + payload)
         return get_wire_codec().encode(raw)
 
-    def describe(self, prefix_enum: Optional[Type[PrefixEnumT]] = None) -> str:
+    def describe(
+        self,
+        prefix_enum: Optional[Type[PrefixEnumT]] = None,
+        bool_as_int: bool = True,
+        enum_as_name: bool = True,
+    ) -> str:
         if self.__bin_prefix__ is None:
             raise TypeError("describe() must be called on a subclass")
-        return describe_instance(self.__bin_plan__, self, self.__bin_prefix__, prefix_enum)
+        return describe_instance(
+            self.__bin_plan__,
+            self,
+            self.__bin_prefix__,
+            prefix_enum,
+            bool_as_int,
+            enum_as_name,
+        )
 
     @classmethod
     def try_unpack(cls, packed: str) -> Optional["BinaryCallbackData"]:

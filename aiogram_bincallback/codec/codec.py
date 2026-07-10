@@ -37,11 +37,16 @@ def decode_fields(plan: CodecPlan, data: bytes, start_bit: int) -> Tuple[Dict[st
     return values, reader.position_bits
 
 
-def describe_fields(plan: CodecPlan, instance: BaseModel) -> List[str]:
+def describe_fields(
+    plan: CodecPlan,
+    instance: BaseModel,
+    bool_as_int: bool,
+    enum_as_name: bool,
+) -> List[str]:
     tokens: List[str] = []
     for codec in plan:
         value = getattr(instance, codec.name)
-        tokens.append(_describe_field(codec, value))
+        tokens.append(_describe_field(codec, value, bool_as_int, enum_as_name))
     return tokens
 
 
@@ -50,18 +55,24 @@ def describe_instance(
     instance: BaseModel,
     prefix: int,
     prefix_enum: Optional[Type[PrefixEnumT]],
+    bool_as_int: bool = True,
+    enum_as_name: bool = True,
 ) -> str:
-    tokens = [_resolve_prefix_token(prefix, prefix_enum), *describe_fields(plan, instance)]
+    field_tokens = describe_fields(plan, instance, bool_as_int, enum_as_name)
+    tokens = [_resolve_prefix_token(prefix, prefix_enum), *field_tokens]
     return DESCRIBE_FIELD_SEPARATOR.join(tokens)
 
 
-def _describe_field(codec: FieldCodec, value: Any) -> str:
+def _describe_field(codec: FieldCodec, value: Any, bool_as_int: bool, enum_as_name: bool) -> str:
     if value is None:
         return str(value)
     if isinstance(codec, NestedFieldCodec):
-        return DESCRIBE_FIELD_SEPARATOR.join(describe_fields(codec.plan, value))
+        nested_tokens = describe_fields(codec.plan, value, bool_as_int, enum_as_name)
+        return DESCRIBE_FIELD_SEPARATOR.join(nested_tokens)
     if isinstance(codec, EnumFieldCodec):
-        return value.name
+        return value.name if enum_as_name else str(value.value)
+    if isinstance(codec, BoolFieldCodec) and bool_as_int:
+        return str(int(value))
     return str(value)
 
 
