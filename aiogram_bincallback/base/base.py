@@ -31,6 +31,7 @@ from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
 from aiogram_bincallback.registry import make_aiogram_prefix
 from aiogram_bincallback.registry import register
+from aiogram_bincallback.registry import resolve
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
 
 PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
@@ -69,6 +70,8 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         version: int,
         **kw: object,
     ) -> None:
+        if prefix is None:
+            raise TypeError("prefix cannot be None")
         super().__init_subclass__(prefix=make_aiogram_prefix(prefix), **kw)
         cls.__bin_prefix__ = prefix
         cls.__bin_version__ = version
@@ -121,6 +124,16 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         if self.__bin_prefix__ is None:
             raise TypeError("describe() must be called on a subclass")
         return describe_instance(self.__bin_plan__, self, self.__bin_prefix__, prefix_enum)
+
+    @classmethod
+    def try_unpack(cls, packed: str) -> Optional["BinaryCallbackData"]:
+        header = cls.get_header(packed)
+        if header is None:
+            return None
+        resolved_cls = resolve(header.prefix, header.version)
+        if resolved_cls is None:
+            return None
+        return resolved_cls.unpack(packed)
 
     @classmethod
     def unpack(cls, packed: str) -> "BinaryCallbackData":

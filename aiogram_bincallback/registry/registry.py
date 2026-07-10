@@ -1,4 +1,5 @@
 from typing import Dict
+from typing import Optional
 from typing import Tuple
 
 from aiogram_bincallback.core import AIOGRAM_PREFIX_TEMPLATE
@@ -13,6 +14,10 @@ def register(prefix: int, version: int, cls: type) -> None:
     if existing_cls is not None and existing_cls is not cls:
         raise PrefixCollisionError(prefix, existing_cls.__name__, cls.__name__)
     _prefix_registry[key] = cls
+
+
+def resolve(prefix: int, version: int) -> Optional[type]:
+    return _prefix_registry.get((prefix, version))
 
 
 def make_aiogram_prefix(prefix: int) -> str:
