@@ -98,11 +98,10 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
 
         header = cls.get_header(packed)
         return (
-                header is not None
-                and header.prefix == cls.__bin_prefix__
-                and header.version == cls.__bin_version__
+            header is not None
+            and header.prefix == cls.__bin_prefix__
+            and header.version == cls.__bin_version__
         )
-
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kw: object) -> None:
