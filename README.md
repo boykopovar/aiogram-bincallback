@@ -5,7 +5,7 @@
 ## Установка
 
 ```
-pip install -U git+ssh://git@github.com/boykopovar/aiogram-bincallback.git
+pip install aiogram-bincallback
 ```
 
 ## Использование
