@@ -34,6 +34,19 @@ class DuplicateBinOrderError(DefinitionError):
         super().__init__(f"enum field '{path}' lists member '{member_name}' more than once in bin_order")
 
 
+class MissingMaxLenError(DefinitionError):
+    def __init__(self, path: str) -> None:
+        super().__init__(f"list field '{path}' requires an explicit max_len= argument to bfield()")
+
+
+class BitsNotApplicableToListError(DefinitionError):
+    def __init__(self, path: str) -> None:
+        super().__init__(
+            f"field '{path}' is a list field and does not accept a bits= argument, "
+            f"item width is derived from bin_order"
+        )
+
+
 class SignedNotApplicableError(DefinitionError):
     def __init__(self, path: str, annotation: object) -> None:
         super().__init__(f"field '{path}' of type {annotation!r} does not accept a signed= argument")
@@ -75,6 +88,11 @@ class ValueOverflowError(EncodeError):
     def __init__(self, path: str, value: int, bits: int, signed: bool) -> None:
         signedness = "signed" if signed else "unsigned"
         super().__init__(f"value {value} for field '{path}' does not fit in {bits} {signedness} bits")
+
+
+class ListLengthOverflowError(EncodeError):
+    def __init__(self, path: str, length: int, max_len: int) -> None:
+        super().__init__(f"list field '{path}' has {length} items, which exceeds max_len={max_len}")
 
 
 class DecodeError(BinaryCallbackError):

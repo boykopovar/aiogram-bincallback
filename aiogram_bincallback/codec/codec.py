@@ -13,11 +13,14 @@ from aiogram_bincallback.bitstream.bitstream import BitReader
 from aiogram_bincallback.bitstream.bitstream import BitWriter
 from aiogram_bincallback.core.constants import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core.constants import DESCRIBE_FIELD_SEPARATOR
+from aiogram_bincallback.core.constants import DESCRIBE_LIST_SEPARATOR
+from aiogram_bincallback.core.exceptions import ListLengthOverflowError
 from aiogram_bincallback.core.exceptions import PrefixEnumMismatchError
 from aiogram_bincallback.core.exceptions import ValueOverflowError
 from aiogram_bincallback.planning.planning import BoolFieldCodec
 from aiogram_bincallback.planning.planning import CodecPlan
 from aiogram_bincallback.planning.planning import EnumFieldCodec
+from aiogram_bincallback.planning.planning import EnumListFieldCodec
 from aiogram_bincallback.planning.planning import FieldCodec
 from aiogram_bincallback.planning.planning import IntFieldCodec
 from aiogram_bincallback.planning.planning import NestedFieldCodec
@@ -69,11 +72,22 @@ def _describe_field(codec: FieldCodec, value: Any, bool_as_int: bool, enum_as_na
     if isinstance(codec, NestedFieldCodec):
         nested_tokens = describe_fields(codec.plan, value, bool_as_int, enum_as_name)
         return DESCRIBE_FIELD_SEPARATOR.join(nested_tokens)
+    if isinstance(codec, EnumListFieldCodec):
+        return _describe_enum_list(value, enum_as_name)
     if isinstance(codec, EnumFieldCodec):
         return value.name if enum_as_name else str(value.value)
     if isinstance(codec, BoolFieldCodec) and bool_as_int:
         return str(int(value))
     return str(value)
+
+
+def _describe_enum_list(value: List[Enum], enum_as_name: bool) -> str:
+    item_tokens = [_describe_enum_list_item(item, enum_as_name) for item in value]
+    return DESCRIBE_LIST_SEPARATOR.join(item_tokens)
+
+
+def _describe_enum_list_item(item: Enum, enum_as_name: bool) -> str:
+    return item.name if enum_as_name else str(item.value)
 
 
 def _resolve_prefix_token(prefix: int, prefix_enum: Optional[Type[PrefixEnumT]]) -> str:
@@ -119,7 +133,17 @@ def _write_field(writer: BitWriter, codec: FieldCodec, value: Any) -> None:
     if isinstance(codec, EnumFieldCodec):
         writer.write_uint(codec.bin_order.index(value), codec.bits)
         return
+    if isinstance(codec, EnumListFieldCodec):
+        _write_enum_list(writer, codec, value)
+        return
     _encode_fields_into(codec.plan, value, writer)
+
+
+def _write_enum_list(writer: BitWriter, codec: EnumListFieldCodec, value: List[Enum]) -> None:
+    _check_list_length_overflow(codec, value)
+    writer.write_uint(len(value), codec.len_bits)
+    for item in value:
+        writer.write_uint(codec.bin_order.index(item), codec.item_bits)
 
 
 def _read_field(reader: BitReader, codec: FieldCodec) -> Any:
@@ -129,13 +153,25 @@ def _read_field(reader: BitReader, codec: FieldCodec) -> Any:
         return reader.read_int(codec.bits) if codec.signed else reader.read_uint(codec.bits)
     if isinstance(codec, EnumFieldCodec):
         return codec.bin_order[reader.read_uint(codec.bits)]
+    if isinstance(codec, EnumListFieldCodec):
+        return _read_enum_list(reader, codec)
     return _decode_fields_from(codec.plan, reader)
+
+
+def _read_enum_list(reader: BitReader, codec: EnumListFieldCodec) -> List[Enum]:
+    count = reader.read_uint(codec.len_bits)
+    return [codec.bin_order[reader.read_uint(codec.item_bits)] for _ in range(count)]
 
 
 def _check_int_overflow(codec: IntFieldCodec, value: int) -> None:
     lower_bound, upper_bound = _int_bounds(codec.bits, codec.signed)
     if value < lower_bound or value > upper_bound:
         raise ValueOverflowError(codec.path, value, codec.bits, codec.signed)
+
+
+def _check_list_length_overflow(codec: EnumListFieldCodec, value: List[Enum]) -> None:
+    if len(value) > codec.max_len:
+        raise ListLengthOverflowError(codec.path, len(value), codec.max_len)
 
 
 def _int_bounds(bits: int, signed: bool) -> Tuple[int, int]:

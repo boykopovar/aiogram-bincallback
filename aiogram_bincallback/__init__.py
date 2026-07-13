@@ -2,6 +2,7 @@ from aiogram_bincallback.base import BinaryCallbackData
 from aiogram_bincallback.base import bfield
 from aiogram_bincallback.config import configure
 from aiogram_bincallback.core import BinaryCallbackError
+from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import CircularNestingError
 from aiogram_bincallback.core import DecodeError
 from aiogram_bincallback.core import DecryptionError
@@ -9,7 +10,9 @@ from aiogram_bincallback.core import DefinitionError
 from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import EncodeError
 from aiogram_bincallback.core import InsufficientBitsError
+from aiogram_bincallback.core import ListLengthOverflowError
 from aiogram_bincallback.core import MissingBitsError
+from aiogram_bincallback.core import MissingMaxLenError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
 from aiogram_bincallback.core import PayloadCorruptError
@@ -31,6 +34,7 @@ __all__ = (
     "ICipher",
     "NullCipher",
     "BinaryCallbackError",
+    "BitsNotApplicableToListError",
     "CircularNestingError",
     "DecodeError",
     "DecryptionError",
@@ -38,7 +42,9 @@ __all__ = (
     "DuplicateBinOrderError",
     "EncodeError",
     "InsufficientBitsError",
+    "ListLengthOverflowError",
     "MissingBitsError",
+    "MissingMaxLenError",
     "MissingSignedError",
     "NestedCallbackDataError",
     "PayloadCorruptError",

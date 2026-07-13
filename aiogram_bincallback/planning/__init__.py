@@ -1,6 +1,7 @@
 from aiogram_bincallback.planning.planning import BoolFieldCodec
 from aiogram_bincallback.planning.planning import CodecPlan
 from aiogram_bincallback.planning.planning import EnumFieldCodec
+from aiogram_bincallback.planning.planning import EnumListFieldCodec
 from aiogram_bincallback.planning.planning import FieldCodec
 from aiogram_bincallback.planning.planning import IntFieldCodec
 from aiogram_bincallback.planning.planning import NestedFieldCodec
@@ -13,6 +14,7 @@ __all__ = (
     "BoolFieldCodec",
     "CodecPlan",
     "EnumFieldCodec",
+    "EnumListFieldCodec",
     "FieldCodec",
     "IntFieldCodec",
     "NestedFieldCodec",

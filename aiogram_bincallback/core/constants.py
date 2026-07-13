@@ -6,6 +6,7 @@ MAX_CALLBACK_LENGTH = 64
 BIN_BITS_KEY = "bin_bits"
 BIN_ORDER_KEY = "bin_order"
 BIN_SIGNED_KEY = "bin_signed"
+BIN_MAX_LEN_KEY = "bin_max_len"
 
 DEFAULT_BOOL_BITS = 1
 DEFAULT_INT_BITS = 32
@@ -15,3 +16,4 @@ BIN_PLAN_ATTR = "__bin_plan__"
 AIOGRAM_PREFIX_TEMPLATE = "bin{prefix}"
 
 DESCRIBE_FIELD_SEPARATOR = ":"
+DESCRIBE_LIST_SEPARATOR = ","

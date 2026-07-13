@@ -18,6 +18,7 @@ from aiogram_bincallback.codec import encode_fields
 from aiogram_bincallback.config import get_cipher
 from aiogram_bincallback.config import get_wire_codec
 from aiogram_bincallback.core import BIN_BITS_KEY
+from aiogram_bincallback.core import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_SIGNED_KEY
 from aiogram_bincallback.core import BinaryCallbackError
@@ -47,6 +48,7 @@ def bfield(
     bits: Optional[int] = None,
     bin_order: Optional[Sequence[Enum]] = None,
     signed: Optional[bool] = None,
+    max_len: Optional[int] = None,
     default: object = PydanticUndefined,
     default_factory: Optional[Callable[[], object]] = None,
     **kw: object,
@@ -55,6 +57,7 @@ def bfield(
     extra[BIN_BITS_KEY] = bits
     extra[BIN_ORDER_KEY] = bin_order
     extra[BIN_SIGNED_KEY] = signed
+    extra[BIN_MAX_LEN_KEY] = max_len
     if default_factory is not None:
         return Field(default_factory=default_factory, json_schema_extra=extra, **kw)
     return Field(default=default, json_schema_extra=extra, **kw)

@@ -17,15 +17,18 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from aiogram_bincallback.core import BIN_BITS_KEY
+from aiogram_bincallback.core import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_PLAN_ATTR
 from aiogram_bincallback.core import BIN_SIGNED_KEY
+from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import CircularNestingError
+from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import DEFAULT_BOOL_BITS
 from aiogram_bincallback.core import DEFAULT_INT_BITS
-from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import InsufficientBitsError
 from aiogram_bincallback.core import MissingBitsError
+from aiogram_bincallback.core import MissingMaxLenError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
 from aiogram_bincallback.core import SignedNotApplicableError
@@ -63,6 +66,18 @@ class EnumFieldCodec(Generic[EnumT]):
 
 
 @dataclass(frozen=True)
+class EnumListFieldCodec(Generic[EnumT]):
+    name: str
+    path: str
+    item_bits: int
+    len_bits: int
+    max_len: int
+    bin_order: Tuple[EnumT, ...]
+    enum_cls: Type[EnumT]
+    optional: bool
+
+
+@dataclass(frozen=True)
 class NestedFieldCodec:
     name: str
     path: str
@@ -71,7 +86,7 @@ class NestedFieldCodec:
     optional: bool
 
 
-FieldCodec = Union[BoolFieldCodec, IntFieldCodec, EnumFieldCodec, NestedFieldCodec]
+FieldCodec = Union[BoolFieldCodec, IntFieldCodec, EnumFieldCodec, EnumListFieldCodec, NestedFieldCodec]
 CodecPlan = List[FieldCodec]
 
 
@@ -151,6 +166,22 @@ def _is_enum_type(annotation: Any) -> bool:
     return isinstance(annotation, type) and issubclass(annotation, Enum)
 
 
+def _is_enum_list_annotation(annotation: Any) -> bool:
+    return get_origin(annotation) is list
+
+
+def _unwrap_enum_list_item(annotation: Any, path: str) -> Type[EnumT]:
+    args = get_args(annotation)
+    if len(args) != 1:
+        raise UnsupportedFieldTypeError(path, annotation)
+    item_annotation = args[0]
+    if get_origin(item_annotation) is Union:
+        raise UnsupportedFieldTypeError(path, annotation)
+    if not _is_enum_type(item_annotation):
+        raise UnsupportedFieldTypeError(path, annotation)
+    return item_annotation
+
+
 def _build_primitive_codec(
     field_name: str,
     field_info: FieldInfo,
@@ -162,12 +193,18 @@ def _build_primitive_codec(
     bits = extra.get(BIN_BITS_KEY)
     signed = extra.get(BIN_SIGNED_KEY)
     bin_order = extra.get(BIN_ORDER_KEY)
+    max_len = extra.get(BIN_MAX_LEN_KEY)
     if annotation is bool:
         return _build_bool_codec(field_name, path, signed, optional)
     if annotation is int:
         return _build_int_codec(field_name, path, bits, signed, optional)
     if _is_enum_type(annotation):
         return _build_enum_codec(field_name, path, bits, signed, bin_order, annotation, optional)
+    if _is_enum_list_annotation(annotation):
+        item_enum_cls = _unwrap_enum_list_item(annotation, path)
+        return _build_enum_list_codec(
+            field_name, path, bits, signed, bin_order, max_len, item_enum_cls, optional
+        )
     raise UnsupportedFieldTypeError(path, annotation)
 
 
@@ -228,6 +265,37 @@ def _build_enum_codec(
     )
 
 
+def _build_enum_list_codec(
+    field_name: str,
+    path: str,
+    bits: Optional[int],
+    signed: Optional[bool],
+    bin_order: Optional[Sequence[EnumT]],
+    max_len: Optional[int],
+    enum_cls: Type[EnumT],
+    optional: bool,
+) -> EnumListFieldCodec:
+    if signed is not None:
+        raise SignedNotApplicableError(path, enum_cls)
+    if bits is not None:
+        raise BitsNotApplicableToListError(path)
+    if max_len is None:
+        raise MissingMaxLenError(path)
+    resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
+    item_bits = _minimum_bits_for_count(len(resolved_bin_order))
+    len_bits = _minimum_bits_for_count(max_len + 1)
+    return EnumListFieldCodec(
+        name=field_name,
+        path=path,
+        item_bits=item_bits,
+        len_bits=len_bits,
+        max_len=max_len,
+        bin_order=resolved_bin_order,
+        enum_cls=enum_cls,
+        optional=optional,
+    )
+
+
 def _resolve_bin_order(
     path: str,
     bin_order: Optional[Sequence[EnumT]],
@@ -267,4 +335,6 @@ def _inner_field_bits(codec: FieldCodec) -> int:
         return codec.bits
     if isinstance(codec, EnumFieldCodec):
         return codec.bits
+    if isinstance(codec, EnumListFieldCodec):
+        return codec.len_bits + codec.max_len * codec.item_bits
     return plan_total_bits(codec.plan)
