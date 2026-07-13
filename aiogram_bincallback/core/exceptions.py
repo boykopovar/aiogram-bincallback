@@ -80,6 +80,14 @@ class PrefixCollisionError(DefinitionError):
         )
 
 
+class ExpectedTypeError(DefinitionError):
+    def __init__(self, candidate: object) -> None:
+        super().__init__(
+            f"expected type {candidate!r} must be a subclass of BinaryCallbackData, "
+            f"BinaryCallbackData itself is not allowed"
+        )
+
+
 class EncodeError(BinaryCallbackError):
     pass
 

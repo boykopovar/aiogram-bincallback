@@ -1,5 +1,5 @@
-git tag v0.2.1
-git push origin v0.2.1
+git tag v0.2.3
+git push origin v0.2.3
 
 git tag -d v0.2.0
 git push origin --delete v0.2.0

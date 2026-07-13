@@ -20,6 +20,7 @@ from aiogram_bincallback.core.exceptions import DecryptionError
 from aiogram_bincallback.core.exceptions import DefinitionError
 from aiogram_bincallback.core.exceptions import DuplicateBinOrderError
 from aiogram_bincallback.core.exceptions import EncodeError
+from aiogram_bincallback.core.exceptions import ExpectedTypeError
 from aiogram_bincallback.core.exceptions import InsufficientBitsError
 from aiogram_bincallback.core.exceptions import ListLengthOverflowError
 from aiogram_bincallback.core.exceptions import MissingBitsError
@@ -59,6 +60,7 @@ __all__ = (
     "DefinitionError",
     "DuplicateBinOrderError",
     "EncodeError",
+    "ExpectedTypeError",
     "InsufficientBitsError",
     "ListLengthOverflowError",
     "MissingBitsError",
