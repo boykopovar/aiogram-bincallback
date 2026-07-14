@@ -12,8 +12,13 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+
   build:
     name: Build distribution
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +42,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: [build]
+    needs: [test, build]
     runs-on: ubuntu-latest
     environment:
       name: pypi

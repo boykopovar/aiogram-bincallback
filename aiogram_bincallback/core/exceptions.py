@@ -108,7 +108,7 @@ class DecodeError(BinaryCallbackError):
 
 
 class PrefixMismatchError(DecodeError):
-    def __init__(self, actual_prefix: int, expected_prefix: int) -> None:
+    def __init__(self, actual_prefix: int, expected_prefix: Optional[int]) -> None:
         super().__init__(f"decoded prefix {actual_prefix} does not match expected prefix {expected_prefix}")
 
 

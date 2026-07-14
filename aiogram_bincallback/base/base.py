@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 from enum import Enum
-from typing import Any, Callable, Union
+from typing import Callable, Union
+from typing import cast
 from typing import Dict
 from typing import Optional
 from typing import Sequence
@@ -12,6 +11,7 @@ from typing import NamedTuple
 from aiogram.filters.callback_data import CallbackData
 from pydantic import Field
 from pydantic.fields import FieldInfo
+from pydantic.json_schema import JsonDict
 from pydantic_core import PydanticUndefined
 
 from aiogram_bincallback.codec import decode_fields
@@ -33,6 +33,7 @@ from aiogram_bincallback.header import check_size_limit
 from aiogram_bincallback.header import decode_header
 from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
+from aiogram_bincallback.planning import CodecPlan
 from aiogram_bincallback.registry import make_aiogram_prefix, expand_expected_types
 from aiogram_bincallback.registry import register
 from aiogram_bincallback.registry import resolve
@@ -48,6 +49,9 @@ class BinCbHeader(NamedTuple):
     version: int
 
 
+BinFieldExtra = Dict[str, object]
+
+
 def bfield(
     *,
     bits: Optional[int] = None,
@@ -56,21 +60,22 @@ def bfield(
     max_len: Optional[int] = None,
     default: object = PydanticUndefined,
     default_factory: Optional[Callable[[], object]] = None,
-    **kw: object,
 ) -> FieldInfo:
-    extra = kw.pop("json_schema_extra", {}) or {}
+    extra: BinFieldExtra = {}
     extra[BIN_BITS_KEY] = bits
     extra[BIN_ORDER_KEY] = bin_order
     extra[BIN_SIGNED_KEY] = signed
     extra[BIN_MAX_LEN_KEY] = max_len
+    schema_extra = cast(JsonDict, extra)
     if default_factory is not None:
-        return Field(default_factory=default_factory, json_schema_extra=extra, **kw)
-    return Field(default=default, json_schema_extra=extra, **kw)
+        return cast(FieldInfo, Field(default_factory=default_factory, json_schema_extra=schema_extra))
+    return cast(FieldInfo, Field(default=default, json_schema_extra=schema_extra))
 
 
 class BinaryCallbackData(CallbackData, prefix="_bin_"):
     __bin_prefix__: Optional[int] = None
     __bin_version__: int = 1
+    __bin_plan__: CodecPlan
 
     def __init_subclass__(
         cls,
@@ -122,6 +127,7 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         check_size_limit(cls.__bin_plan__, MAX_PAYLOAD_BITS)
 
     def pack(self) -> str:
+        assert self.__bin_prefix__ is not None
         header = encode_header(self.__bin_prefix__, self.__bin_version__)
         payload = encode_fields(self.__bin_plan__, self)
         raw = get_cipher().encrypt(header + payload)
@@ -167,7 +173,7 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
             if not issubclass(resolved_cls, allowed_classes):
                 return None
 
-        return resolved_cls.unpack(packed)
+        return cast(BinaryCallbackDataT, resolved_cls.unpack(packed))
 
     @classmethod
     def unpack(cls, packed: str) -> "BinaryCallbackData":
@@ -178,7 +184,6 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
                 raise PrefixMismatchError(prefix, cls.__bin_prefix__)
             if version != cls.__bin_version__:
                 raise VersionMismatchError(version, cls.__bin_version__)
-            data: Dict[str, Any]
             data, _ = decode_fields(cls.__bin_plan__, raw, HEADER_BITS)
             return cls(**data)
         except BinaryCallbackError:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiogram-bincallback"
-version = "0.2.3"
+version = "0.2.4"
 description = "Binary CallbackData serialization for aiogram 3.x"
 readme = "README.md"
 license = { text = "MIT" }
@@ -39,6 +39,7 @@ Issues = "https://github.com/boykopovar/aiogram-bincallback/issues"
 dev = [
     "pytest>=7.0",
     "pytest-cov>=5.0",
+    "mypy>=1.10"
 ]
 
 [tool.mypy]

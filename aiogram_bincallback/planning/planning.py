@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+from typing import cast
+from typing import Dict
 from typing import Generic
 from typing import List
 from typing import Optional
@@ -105,6 +107,13 @@ def build_codec_plan(
     return plan
 
 
+def _field_extra(field_info: FieldInfo) -> Dict[str, Any]:
+    schema_extra = field_info.json_schema_extra
+    if isinstance(schema_extra, dict):
+        return schema_extra
+    return {}
+
+
 def extend_path(path: Optional[str], field_name: str) -> str:
     if path is None:
         return field_name
@@ -134,7 +143,7 @@ def _build_field_codec(
     if hasattr(annotation, BIN_PLAN_ATTR):
         raise NestedCallbackDataError(path)
     if _is_nested_model(annotation):
-        extra = field_info.json_schema_extra or {}
+        extra = _field_extra(field_info)
         if extra.get(BIN_SIGNED_KEY) is not None:
             raise SignedNotApplicableError(path, annotation)
         nested_plan = build_codec_plan(annotation, path, visited)
@@ -170,7 +179,7 @@ def _is_enum_list_annotation(annotation: Any) -> bool:
     return get_origin(annotation) is list
 
 
-def _unwrap_enum_list_item(annotation: Any, path: str) -> Type[EnumT]:
+def _unwrap_enum_list_item(annotation: Any, path: str) -> Type[Enum]:
     args = get_args(annotation)
     if len(args) != 1:
         raise UnsupportedFieldTypeError(path, annotation)
@@ -179,7 +188,7 @@ def _unwrap_enum_list_item(annotation: Any, path: str) -> Type[EnumT]:
         raise UnsupportedFieldTypeError(path, annotation)
     if not _is_enum_type(item_annotation):
         raise UnsupportedFieldTypeError(path, annotation)
-    return item_annotation
+    return cast(Type[Enum], item_annotation)
 
 
 def _build_primitive_codec(
@@ -189,11 +198,11 @@ def _build_primitive_codec(
     annotation: Any,
     optional: bool,
 ) -> FieldCodec:
-    extra = field_info.json_schema_extra or {}
-    bits = extra.get(BIN_BITS_KEY)
-    signed = extra.get(BIN_SIGNED_KEY)
-    bin_order = extra.get(BIN_ORDER_KEY)
-    max_len = extra.get(BIN_MAX_LEN_KEY)
+    extra = _field_extra(field_info)
+    bits = _extra_int(extra, BIN_BITS_KEY)
+    signed = _extra_bool(extra, BIN_SIGNED_KEY)
+    bin_order = _extra_sequence(extra, BIN_ORDER_KEY)
+    max_len = _extra_int(extra, BIN_MAX_LEN_KEY)
     if annotation is bool:
         return _build_bool_codec(field_name, path, signed, optional)
     if annotation is int:
@@ -201,11 +210,26 @@ def _build_primitive_codec(
     if _is_enum_type(annotation):
         return _build_enum_codec(field_name, path, bits, signed, bin_order, annotation, optional)
     if _is_enum_list_annotation(annotation):
-        item_enum_cls = _unwrap_enum_list_item(annotation, path)
+        item_enum_cls: Type[Enum] = _unwrap_enum_list_item(annotation, path)
         return _build_enum_list_codec(
             field_name, path, bits, signed, bin_order, max_len, item_enum_cls, optional
         )
     raise UnsupportedFieldTypeError(path, annotation)
+
+
+def _extra_int(extra: Dict[str, Any], key: str) -> Optional[int]:
+    value = extra.get(key)
+    return value if isinstance(value, int) else None
+
+
+def _extra_bool(extra: Dict[str, Any], key: str) -> Optional[bool]:
+    value = extra.get(key)
+    return value if isinstance(value, bool) else None
+
+
+def _extra_sequence(extra: Dict[str, Any], key: str) -> Optional[Sequence[Any]]:
+    value = extra.get(key)
+    return value if isinstance(value, Sequence) else None
 
 
 def _build_bool_codec(
