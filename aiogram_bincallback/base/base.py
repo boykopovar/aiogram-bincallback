@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Union
 from typing import Dict
 from typing import Optional
 from typing import Sequence
 from typing import Type
 from typing import TypeVar
 from typing import NamedTuple
-from typing import overload
 
 from aiogram.filters.callback_data import CallbackData
 from pydantic import Field
@@ -24,6 +25,7 @@ from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_SIGNED_KEY
 from aiogram_bincallback.core import BinaryCallbackError
 from aiogram_bincallback.core import DecodeError
+from aiogram_bincallback.core import ExpectedTypeError
 from aiogram_bincallback.core import HEADER_BITS
 from aiogram_bincallback.core import PrefixMismatchError
 from aiogram_bincallback.core import VersionMismatchError
@@ -31,11 +33,11 @@ from aiogram_bincallback.header import check_size_limit
 from aiogram_bincallback.header import decode_header
 from aiogram_bincallback.header import encode_header
 from aiogram_bincallback.planning import build_codec_plan
-from aiogram_bincallback.registry import expand_expected_types
-from aiogram_bincallback.registry import make_aiogram_prefix
+from aiogram_bincallback.registry import make_aiogram_prefix, expand_expected_types
 from aiogram_bincallback.registry import register
 from aiogram_bincallback.registry import resolve
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
+
 
 PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
 BinaryCallbackDataT = TypeVar("BinaryCallbackDataT", bound="BinaryCallbackData")
@@ -142,32 +144,29 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
             enum_as_name,
         )
 
-    @overload
-    @classmethod
-    def try_unpack(cls, packed: str) -> Optional["BinaryCallbackData"]:
-        ...
-
-    @overload
     @classmethod
     def try_unpack(
-        cls,
-        packed: str,
-        expected: Type[BinaryCallbackDataT],
+            cls,
+            packed: str,
+            expected: Optional[Union[Type[BinaryCallbackDataT], Type]] = None,
     ) -> Optional[BinaryCallbackDataT]:
-        ...
-
-    @classmethod
-    def try_unpack(cls, packed: str, expected: object = None) -> Optional["BinaryCallbackData"]:
         header = cls.get_header(packed)
         if header is None:
             return None
         resolved_cls = resolve(header.prefix, header.version)
         if resolved_cls is None:
             return None
+
         if expected is not None:
             allowed_classes = expand_expected_types(expected)
+            for allowed in allowed_classes:
+                if allowed is BinaryCallbackData or not issubclass(allowed, BinaryCallbackData):
+                    raise ExpectedTypeError(
+                        f"{allowed!r} is not a valid BinaryCallbackData subclass"
+                    )
             if not issubclass(resolved_cls, allowed_classes):
                 return None
+
         return resolved_cls.unpack(packed)
 
     @classmethod
