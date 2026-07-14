@@ -15,6 +15,7 @@ requires-python = ">=3.8"
 dependencies = [
     "aiogram>=3.0,<4.0",
     "pydantic>=2.0,<3.0",
+    "mypy>=1.10",
 ]
 
 classifiers = [
@@ -39,6 +40,26 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=5.0",
 ]
+
+[tool.mypy]
+python_version = "3.8"
+files = ["aiogram_bincallback"]
+plugins = ["pydantic.mypy"]
+
+warn_return_any = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+strict_equality = true
+
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.setuptools.packages.find]
 include = ["aiogram_bincallback*"]
