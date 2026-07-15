@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiogram-bincallback"
-version = "0.2.4"
+version = "0.2.5"
 description = "Binary CallbackData serialization for aiogram 3.x"
 readme = "README.md"
 license = { text = "MIT" }
@@ -14,8 +14,7 @@ authors = [
 requires-python = ">=3.8"
 dependencies = [
     "aiogram>=3.0,<4.0",
-    "pydantic>=2.0,<3.0",
-    "mypy>=1.10",
+    "pydantic>=2.0,<3.0"
 ]
 
 classifiers = [
