@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Callable, Union
+from typing import Callable, Union, ClassVar
 from typing import cast
 from typing import Dict
 from typing import Optional
@@ -75,7 +75,7 @@ def bfield(
 class BinaryCallbackData(CallbackData, prefix="_bin_"):
     __bin_prefix__: Optional[int] = None
     __bin_version__: int = 1
-    __bin_plan__: CodecPlan
+    __bin_plan__: ClassVar[CodecPlan]
 
     def __init_subclass__(
         cls,
