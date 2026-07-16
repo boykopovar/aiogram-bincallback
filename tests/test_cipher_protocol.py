@@ -29,9 +29,9 @@ def test_icipher_subclass_missing_decrypt_cannot_be_instantiated():
 def test_icipher_subclass_implementing_both_methods_can_be_instantiated():
     class CompleteCipher(ICipher):
         def encrypt(self, data: bytes) -> bytes:
-            return data
+            return data[::-1]
 
         def decrypt(self, data: bytes) -> bytes:
-            return data
+            return data[::-1]
 
     assert isinstance(CompleteCipher(), ICipher)
