@@ -38,6 +38,7 @@ from aiogram_bincallback.registry import make_aiogram_prefix, expand_expected_ty
 from aiogram_bincallback.registry import register
 from aiogram_bincallback.registry import resolve
 from aiogram_bincallback.wire import MAX_PAYLOAD_BITS
+from aiogram_bincallback.wire import MAX_TOTAL_BITS
 
 
 PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
@@ -89,6 +90,14 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         super().__init_subclass__(prefix=make_aiogram_prefix(prefix), **kw)
         cls.__bin_prefix__ = prefix
         cls.__bin_version__ = version
+
+    @classmethod
+    def max_payload_bits(cls) -> int:
+        return MAX_PAYLOAD_BITS
+
+    @classmethod
+    def max_total_bits(cls) -> int:
+        return MAX_TOTAL_BITS
 
     @classmethod
     def get_header(cls, packed: str) -> Optional[BinCbHeader]:
