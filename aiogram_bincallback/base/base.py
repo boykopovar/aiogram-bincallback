@@ -21,6 +21,7 @@ from aiogram_bincallback.codec import EnumListDescribeOptions
 from aiogram_bincallback.config import get_cipher
 from aiogram_bincallback.config import get_wire_codec
 from aiogram_bincallback.core import BIN_BITS_KEY
+from aiogram_bincallback.core import BIN_ITEM_BITS_KEY
 from aiogram_bincallback.core import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_SIGNED_KEY
@@ -58,6 +59,7 @@ BinFieldExtra = Dict[str, object]
 def bfield(
     *,
     bits: Optional[int] = None,
+    item_bits: Optional[int] = None,
     bin_order: Optional[Sequence[Enum]] = None,
     signed: Optional[bool] = None,
     max_len: Optional[int] = None,
@@ -66,6 +68,7 @@ def bfield(
 ) -> FieldInfo:
     extra: BinFieldExtra = {
         BIN_BITS_KEY: bits,
+        BIN_ITEM_BITS_KEY: item_bits,
         BIN_ORDER_KEY: bin_order,
         BIN_SIGNED_KEY: signed,
         BIN_MAX_LEN_KEY: max_len

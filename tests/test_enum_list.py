@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import DuplicateBinOrderError
+from aiogram_bincallback.core import InsufficientBitsError
 from aiogram_bincallback.core import MissingMaxLenError
 from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
@@ -78,6 +79,54 @@ def test_enum_list_field_without_max_len_raises_missing_max_len_error():
         build_codec_plan(Model)
 
     assert "path" in str(excinfo.value)
+
+
+def test_enum_list_field_with_item_bits_reserves_extra_room():
+    class Model(BaseModel):
+        path: List[Direction] = planning_bfield(max_len=3, item_bits=4)
+
+    plan = build_codec_plan(Model)
+
+    assert plan[0].item_bits == 4
+
+
+def test_enum_list_field_without_item_bits_defaults_to_minimum_required():
+    class Model(BaseModel):
+        path: List[Direction] = planning_bfield(max_len=3)
+
+    plan = build_codec_plan(Model)
+
+    assert plan[0].item_bits == 2
+
+
+def test_enum_list_field_with_exactly_enough_item_bits_does_not_raise():
+    class Model(BaseModel):
+        path: List[Direction] = planning_bfield(max_len=3, item_bits=2)
+
+    plan = build_codec_plan(Model)
+
+    assert plan[0].item_bits == 2
+
+
+def test_enum_list_field_with_too_few_item_bits_raises_insufficient_bits_error():
+    class Model(BaseModel):
+        path: List[Direction] = planning_bfield(max_len=3, item_bits=1)
+
+    with pytest.raises(InsufficientBitsError) as excinfo:
+        build_codec_plan(Model)
+
+    assert "path" in str(excinfo.value)
+
+
+def test_enum_list_field_item_bits_affects_total_bits_accounting():
+    class Model(BaseModel):
+        path: List[Direction] = planning_bfield(max_len=3, item_bits=5)
+
+    plan = build_codec_plan(Model)
+
+    len_bits = 2
+    item_bits = 5
+    assert plan_total_bits(plan) == len_bits + 3 * item_bits
 
 
 def test_enum_list_field_with_bits_raises_bits_not_applicable_to_list_error():

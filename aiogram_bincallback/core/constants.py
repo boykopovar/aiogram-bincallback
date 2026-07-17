@@ -4,6 +4,7 @@ VERSION_BITS = 8
 MAX_CALLBACK_LENGTH = 64
 
 BIN_BITS_KEY = "bin_bits"
+BIN_ITEM_BITS_KEY = "bin_item_bits"
 BIN_ORDER_KEY = "bin_order"
 BIN_SIGNED_KEY = "bin_signed"
 BIN_MAX_LEN_KEY = "bin_max_len"

@@ -1,5 +1,6 @@
 from aiogram_bincallback.core.constants import AIOGRAM_PREFIX_TEMPLATE
 from aiogram_bincallback.core.constants import BIN_BITS_KEY
+from aiogram_bincallback.core.constants import BIN_ITEM_BITS_KEY
 from aiogram_bincallback.core.constants import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core.constants import BIN_ORDER_KEY
 from aiogram_bincallback.core.constants import BIN_PLAN_ATTR
@@ -41,6 +42,7 @@ from aiogram_bincallback.core.exceptions import VersionMismatchError
 __all__ = (
     "AIOGRAM_PREFIX_TEMPLATE",
     "BIN_BITS_KEY",
+    "BIN_ITEM_BITS_KEY",
     "BIN_MAX_LEN_KEY",
     "BIN_ORDER_KEY",
     "BIN_PLAN_ATTR",

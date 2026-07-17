@@ -19,6 +19,7 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from aiogram_bincallback.core import BIN_BITS_KEY
+from aiogram_bincallback.core import BIN_ITEM_BITS_KEY
 from aiogram_bincallback.core import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_PLAN_ATTR
@@ -200,6 +201,7 @@ def _build_primitive_codec(
 ) -> FieldCodec:
     extra = _field_extra(field_info)
     bits = _extra_int(extra, BIN_BITS_KEY)
+    item_bits = _extra_int(extra, BIN_ITEM_BITS_KEY)
     signed = _extra_bool(extra, BIN_SIGNED_KEY)
     bin_order = _extra_sequence(extra, BIN_ORDER_KEY)
     max_len = _extra_int(extra, BIN_MAX_LEN_KEY)
@@ -212,7 +214,7 @@ def _build_primitive_codec(
     if _is_enum_list_annotation(annotation):
         item_enum_cls: Type[Enum] = _unwrap_enum_list_item(annotation, path)
         return _build_enum_list_codec(
-            field_name, path, bits, signed, bin_order, max_len, item_enum_cls, optional
+            field_name, path, bits, item_bits, signed, bin_order, max_len, item_enum_cls, optional
         )
     raise UnsupportedFieldTypeError(path, annotation)
 
@@ -276,9 +278,7 @@ def _build_enum_codec(
     if bits is None:
         raise MissingBitsError(path)
     resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
-    required_bits = _minimum_bits_for_count(len(resolved_bin_order))
-    if 2 ** bits < len(resolved_bin_order):
-        raise InsufficientBitsError(path, bits, required_bits)
+    _check_bits_sufficient(path, bits, resolved_bin_order)
     return EnumFieldCodec(
         name=field_name,
         path=path,
@@ -293,6 +293,7 @@ def _build_enum_list_codec(
     field_name: str,
     path: str,
     bits: Optional[int],
+    item_bits: Optional[int],
     signed: Optional[bool],
     bin_order: Optional[Sequence[EnumT]],
     max_len: Optional[int],
@@ -306,18 +307,39 @@ def _build_enum_list_codec(
     if max_len is None:
         raise MissingMaxLenError(path)
     resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
-    item_bits = _minimum_bits_for_count(len(resolved_bin_order))
+    resolved_item_bits = _resolve_item_bits(path, item_bits, resolved_bin_order)
     len_bits = _minimum_bits_for_count(max_len + 1)
     return EnumListFieldCodec(
         name=field_name,
         path=path,
-        item_bits=item_bits,
+        item_bits=resolved_item_bits,
         len_bits=len_bits,
         max_len=max_len,
         bin_order=resolved_bin_order,
         enum_cls=enum_cls,
         optional=optional,
     )
+
+
+def _resolve_item_bits(
+    path: str,
+    item_bits: Optional[int],
+    bin_order: Sequence[EnumT],
+) -> int:
+    if item_bits is None:
+        return _minimum_bits_for_count(len(bin_order))
+    _check_bits_sufficient(path, item_bits, bin_order)
+    return item_bits
+
+
+def _check_bits_sufficient(
+    path: str,
+    bits: int,
+    bin_order: Sequence[EnumT],
+) -> None:
+    required_bits = _minimum_bits_for_count(len(bin_order))
+    if 2 ** bits < len(bin_order):
+        raise InsufficientBitsError(path, bits, required_bits)
 
 
 def _resolve_bin_order(
