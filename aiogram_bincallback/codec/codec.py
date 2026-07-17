@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import NamedTuple
 from typing import Optional
 from typing import Tuple
 from typing import Type
@@ -28,6 +29,15 @@ from aiogram_bincallback.planning.planning import NestedFieldCodec
 PrefixEnumT = TypeVar("PrefixEnumT", bound=Enum)
 
 
+class EnumListDescribeOptions(NamedTuple):
+    as_name: bool = True
+    separator: str = DESCRIBE_LIST_SEPARATOR
+    brackets: bool = True
+
+
+DEFAULT_ENUM_LIST_DESCRIBE_OPTIONS = EnumListDescribeOptions()
+
+
 def encode_fields(plan: CodecPlan, instance: BaseModel) -> bytes:
     writer = BitWriter()
     _encode_fields_into(plan, instance, writer)
@@ -45,11 +55,12 @@ def describe_fields(
     instance: BaseModel,
     bool_as_int: bool,
     enum_as_name: bool,
+    enum_list_options: EnumListDescribeOptions = DEFAULT_ENUM_LIST_DESCRIBE_OPTIONS,
 ) -> List[str]:
     tokens: List[str] = []
     for codec in plan:
         value = getattr(instance, codec.name)
-        tokens.append(_describe_field(codec, value, bool_as_int, enum_as_name))
+        tokens.append(_describe_field(codec, value, bool_as_int, enum_as_name, enum_list_options))
     return tokens
 
 
@@ -60,20 +71,27 @@ def describe_instance(
     prefix_enum: Optional[Type[PrefixEnumT]],
     bool_as_int: bool = True,
     enum_as_name: bool = True,
+    enum_list_options: EnumListDescribeOptions = DEFAULT_ENUM_LIST_DESCRIBE_OPTIONS,
 ) -> str:
-    field_tokens = describe_fields(plan, instance, bool_as_int, enum_as_name)
+    field_tokens = describe_fields(plan, instance, bool_as_int, enum_as_name, enum_list_options)
     tokens = [_resolve_prefix_token(prefix, prefix_enum), *field_tokens]
     return DESCRIBE_FIELD_SEPARATOR.join(tokens)
 
 
-def _describe_field(codec: FieldCodec, value: Any, bool_as_int: bool, enum_as_name: bool) -> str:
+def _describe_field(
+    codec: FieldCodec,
+    value: Any,
+    bool_as_int: bool,
+    enum_as_name: bool,
+    enum_list_options: EnumListDescribeOptions,
+) -> str:
     if value is None:
         return str(value)
     if isinstance(codec, NestedFieldCodec):
-        nested_tokens = describe_fields(codec.plan, value, bool_as_int, enum_as_name)
+        nested_tokens = describe_fields(codec.plan, value, bool_as_int, enum_as_name, enum_list_options)
         return DESCRIBE_FIELD_SEPARATOR.join(nested_tokens)
     if isinstance(codec, EnumListFieldCodec):
-        return _describe_enum_list(value, enum_as_name)
+        return _describe_enum_list(value, enum_list_options)
     if isinstance(codec, EnumFieldCodec):
         return value.name if enum_as_name else str(value.value)
     if isinstance(codec, BoolFieldCodec) and bool_as_int:
@@ -81,9 +99,12 @@ def _describe_field(codec: FieldCodec, value: Any, bool_as_int: bool, enum_as_na
     return str(value)
 
 
-def _describe_enum_list(value: List[Enum], enum_as_name: bool) -> str:
-    item_tokens = [_describe_enum_list_item(item, enum_as_name) for item in value]
-    return DESCRIBE_LIST_SEPARATOR.join(item_tokens)
+def _describe_enum_list(value: List[Enum], options: EnumListDescribeOptions) -> str:
+    item_tokens = [_describe_enum_list_item(item, options.as_name) for item in value]
+    joined = options.separator.join(item_tokens)
+    if options.brackets:
+        return "[" + joined + "]"
+    return joined
 
 
 def _describe_enum_list_item(item: Enum, enum_as_name: bool) -> str:

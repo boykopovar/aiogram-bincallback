@@ -17,6 +17,7 @@ from pydantic_core import PydanticUndefined
 from aiogram_bincallback.codec import decode_fields
 from aiogram_bincallback.codec import describe_instance
 from aiogram_bincallback.codec import encode_fields
+from aiogram_bincallback.codec import EnumListDescribeOptions
 from aiogram_bincallback.config import get_cipher
 from aiogram_bincallback.config import get_wire_codec
 from aiogram_bincallback.core import BIN_BITS_KEY
@@ -25,6 +26,7 @@ from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_SIGNED_KEY
 from aiogram_bincallback.core import BinaryCallbackError
 from aiogram_bincallback.core import DecodeError
+from aiogram_bincallback.core import DESCRIBE_LIST_SEPARATOR
 from aiogram_bincallback.core import ExpectedTypeError
 from aiogram_bincallback.core import HEADER_BITS
 from aiogram_bincallback.core import PrefixMismatchError
@@ -148,9 +150,17 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
         prefix_enum: Optional[Type[PrefixEnumT]] = None,
         bool_as_int: bool = True,
         enum_as_name: bool = True,
+        enum_list_as_name: bool = True,
+        enum_list_separator: str = DESCRIBE_LIST_SEPARATOR,
+        enum_list_brackets: bool = True,
     ) -> str:
         if self.__bin_prefix__ is None:
             raise TypeError("describe() must be called on a subclass")
+        enum_list_options = EnumListDescribeOptions(
+            as_name=enum_list_as_name,
+            separator=enum_list_separator,
+            brackets=enum_list_brackets,
+        )
         return describe_instance(
             self.__bin_plan__,
             self,
@@ -158,6 +168,7 @@ class BinaryCallbackData(CallbackData, prefix="_bin_"):
             prefix_enum,
             bool_as_int,
             enum_as_name,
+            enum_list_options,
         )
 
     @classmethod
