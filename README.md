@@ -53,4 +53,4 @@ async def handle_order(callback, callback_data: OrderCb):
     ...
 ```
 
-[Документация](docs/ru/00-table-of-contents.md)
+[Документация](https://github.com/boykopovar/aiogram-bincallback/blob/main/docs/ru/00-table-of-contents.md)

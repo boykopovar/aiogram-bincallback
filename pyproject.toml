@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiogram-bincallback"
-version = "0.3.0"
+version = "0.3.1"
 description = "Binary CallbackData serialization for aiogram 3.x"
 readme = "README.md"
 license = { text = "MIT" }
