@@ -5,9 +5,11 @@ from aiogram_bincallback import DecodeError
 from aiogram_bincallback import DecryptionError
 from aiogram_bincallback import bfield
 from aiogram_bincallback import configure
+from aiogram_bincallback.core import CipherReconfiguredAfterUseError
 from aiogram_bincallback.wire import Base128WireCodec
 from aiogram_bincallback.wire import ICipher
 from aiogram_bincallback.wire import NullCipher
+from tests.conftest import reset_configuration
 
 
 class XorCipher(ICipher):
@@ -43,7 +45,7 @@ class BrokenThirdPartyCipher(ICipher):
 @pytest.fixture(autouse=True)
 def restore_default_configuration():
     yield
-    configure(wire_codec=Base128WireCodec(), cipher=NullCipher())
+    reset_configuration()
 
 
 def test_pack_unpack_roundtrips_with_cipher_configured():
@@ -63,9 +65,9 @@ def test_packed_output_differs_between_null_cipher_and_real_cipher():
     class PlainCb(BinaryCallbackData, prefix=5002, version=1):
         value: int = bfield(bits=8, signed=False)
 
-    configure(cipher=NullCipher())
     plain_packed = PlainCb(value=7).pack()
 
+    reset_configuration()
     configure(cipher=XorCipher(key=b"secret"))
     encrypted_packed = PlainCb(value=7).pack()
 
@@ -106,6 +108,7 @@ def test_unpack_with_mismatched_key_does_not_silently_return_original_value():
 
     packed = MismatchedKeyCb(value=1).pack()
 
+    reset_configuration()
     configure(cipher=XorCipher(key=b"other-key"))
 
     try:
@@ -122,6 +125,7 @@ def test_unpack_wraps_decryption_error_as_decode_error():
 
     packed = RejectedCb(value=1).pack()
 
+    reset_configuration()
     configure(cipher=RejectingCipher())
 
     with pytest.raises(DecodeError):
@@ -134,6 +138,7 @@ def test_get_header_returns_none_when_third_party_cipher_raises_arbitrary_error(
 
     packed = BrokenCb(value=1).pack()
 
+    reset_configuration()
     configure(cipher=BrokenThirdPartyCipher())
 
     assert BrokenCb.get_header(packed) is None
@@ -145,6 +150,7 @@ def test_is_valid_returns_false_when_third_party_cipher_raises_arbitrary_error()
 
     packed = BrokenValidCb(value=1).pack()
 
+    reset_configuration()
     configure(cipher=BrokenThirdPartyCipher())
 
     assert BrokenValidCb.is_valid(packed) is False
@@ -188,3 +194,39 @@ def test_configuring_wire_codec_alongside_cipher_still_roundtrips():
     restored = ComboCb.unpack(original.pack())
 
     assert restored == original
+
+
+def test_reconfiguring_cipher_after_pack_raises():
+    configure(cipher=XorCipher(key=b"secret"))
+
+    class UsedCb(BinaryCallbackData, prefix=5013, version=1):
+        value: int = bfield(bits=8, signed=False)
+
+    UsedCb(value=1).pack()
+
+    with pytest.raises(CipherReconfiguredAfterUseError):
+        configure(cipher=NullCipher())
+
+
+def test_reconfiguring_cipher_after_unpack_raises():
+    configure(cipher=XorCipher(key=b"secret"))
+
+    class UsedOnUnpackCb(BinaryCallbackData, prefix=5014, version=1):
+        value: int = bfield(bits=8, signed=False)
+
+    packed = UsedOnUnpackCb(value=1).pack()
+    UsedOnUnpackCb.unpack(packed)
+
+    with pytest.raises(CipherReconfiguredAfterUseError):
+        configure(cipher=NullCipher())
+
+
+def test_reconfiguring_wire_codec_only_after_cipher_use_does_not_raise():
+    configure(cipher=XorCipher(key=b"secret"))
+
+    class UsedThenWireCodecCb(BinaryCallbackData, prefix=5015, version=1):
+        value: int = bfield(bits=8, signed=False)
+
+    UsedThenWireCodecCb(value=1).pack()
+
+    configure(wire_codec=Base128WireCodec())

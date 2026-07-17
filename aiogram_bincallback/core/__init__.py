@@ -14,6 +14,7 @@ from aiogram_bincallback.core.constants import PREFIX_BITS
 from aiogram_bincallback.core.constants import VERSION_BITS
 from aiogram_bincallback.core.exceptions import BinaryCallbackError
 from aiogram_bincallback.core.exceptions import BitsNotApplicableToListError
+from aiogram_bincallback.core.exceptions import CipherReconfiguredAfterUseError
 from aiogram_bincallback.core.exceptions import CircularNestingError
 from aiogram_bincallback.core.exceptions import DecodeError
 from aiogram_bincallback.core.exceptions import DecryptionError
@@ -54,6 +55,7 @@ __all__ = (
     "VERSION_BITS",
     "BinaryCallbackError",
     "BitsNotApplicableToListError",
+    "CipherReconfiguredAfterUseError",
     "CircularNestingError",
     "DecodeError",
     "DecryptionError",

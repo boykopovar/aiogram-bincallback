@@ -3,10 +3,12 @@ import pytest
 from aiogram_bincallback.config import configure
 from aiogram_bincallback.config import get_cipher
 from aiogram_bincallback.config import get_wire_codec
+from aiogram_bincallback.core import CipherReconfiguredAfterUseError
 from aiogram_bincallback.wire import Base128WireCodec
 from aiogram_bincallback.wire import ICipher
 from aiogram_bincallback.wire import IWireCodec
 from aiogram_bincallback.wire import NullCipher
+from tests.conftest import reset_configuration
 
 
 class UppercaseCipher(ICipher):
@@ -28,18 +30,14 @@ class ReversingWireCodec(IWireCodec):
 @pytest.fixture(autouse=True)
 def restore_default_configuration():
     yield
-    configure(wire_codec=Base128WireCodec(), cipher=NullCipher())
+    reset_configuration()
 
 
 def test_default_cipher_is_null_cipher():
-    configure(wire_codec=Base128WireCodec(), cipher=NullCipher())
-
     assert isinstance(get_cipher(), NullCipher)
 
 
 def test_default_wire_codec_is_base128_wire_codec():
-    configure(wire_codec=Base128WireCodec(), cipher=NullCipher())
-
     assert isinstance(get_wire_codec(), Base128WireCodec)
 
 
@@ -88,3 +86,38 @@ def test_configure_can_replace_only_wire_codec_and_keep_cipher():
 
     assert get_cipher() is cipher
     assert isinstance(get_wire_codec(), ReversingWireCodec)
+
+
+def test_configure_cipher_before_any_use_does_not_raise():
+    configure(cipher=UppercaseCipher())
+    configure(cipher=NullCipher())
+
+    assert isinstance(get_cipher(), NullCipher)
+
+
+def test_configure_cipher_after_use_raises():
+    configure(cipher=UppercaseCipher())
+    get_cipher()
+
+    with pytest.raises(CipherReconfiguredAfterUseError):
+        configure(cipher=NullCipher())
+
+
+def test_configure_wire_codec_after_cipher_use_does_not_raise():
+    configure(cipher=UppercaseCipher())
+    get_cipher()
+
+    configure(wire_codec=ReversingWireCodec())
+
+    assert isinstance(get_wire_codec(), ReversingWireCodec)
+
+
+def test_configure_cipher_after_use_leaves_previous_cipher_active():
+    cipher = UppercaseCipher()
+    configure(cipher=cipher)
+    get_cipher()
+
+    with pytest.raises(CipherReconfiguredAfterUseError):
+        configure(cipher=NullCipher())
+
+    assert get_cipher() is cipher

@@ -1,6 +1,4 @@
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 
 
 class BinaryCallbackError(ValueError):
@@ -130,3 +128,12 @@ class PayloadCorruptError(DecodeError):
 class DecryptionError(DecodeError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"payload could not be decrypted: {reason}")
+
+
+class CipherReconfiguredAfterUseError(BinaryCallbackError):
+    def __init__(self) -> None:
+        super().__init__(
+            "configure() was called with a cipher after the previously configured "
+            "cipher had already been used to pack or unpack data; call configure() "
+            "before any pack()/unpack() call"
+        )

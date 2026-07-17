@@ -61,11 +61,12 @@ def bfield(
     default: object = PydanticUndefined,
     default_factory: Optional[Callable[[], object]] = None,
 ) -> FieldInfo:
-    extra: BinFieldExtra = {}
-    extra[BIN_BITS_KEY] = bits
-    extra[BIN_ORDER_KEY] = bin_order
-    extra[BIN_SIGNED_KEY] = signed
-    extra[BIN_MAX_LEN_KEY] = max_len
+    extra: BinFieldExtra = {
+        BIN_BITS_KEY: bits,
+        BIN_ORDER_KEY: bin_order,
+        BIN_SIGNED_KEY: signed,
+        BIN_MAX_LEN_KEY: max_len
+    }
     schema_extra = cast(JsonDict, extra)
     if default_factory is not None:
         return cast(FieldInfo, Field(default_factory=default_factory, json_schema_extra=schema_extra))
