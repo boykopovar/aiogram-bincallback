@@ -11,7 +11,7 @@ flag: bool = bfield()
 ```
 
 - ровно 1 бит (`DEFAULT_BOOL_BITS`);
-- `bits` не применим, `signed` запрещен;
+- не принимает никаких параметров `bfield()` кроме `default`/`default_factory` - передача `bits`, `item_bits`, `bin_order`, `signed` или `max_len` (в т.ч. `False`) вызывает `UnrecognizedBinFieldParamError`;
 - кодируется как `int(value)`, декодируется через `bool(...)`.
 
 ## int
@@ -25,7 +25,9 @@ value: int = bfield(bits=16, signed=False)
 | `signed` | да         | -            |
 | `bits`   | нет        | 32           |
 
-Границы: `signed=True` -> `-(2**(bits-1))` .. `2**(bits-1)-1`. `signed=False` -> `0` .. `2**bits-1`.
+`item_bits`, `bin_order`, `max_len` для `int`-поля запрещены - передача любого из них вызывает `UnrecognizedBinFieldParamError`.
+
+Границы: при `signed=True` диапазон `-(2**(bits-1))` .. `2**(bits-1)-1`, при `signed=False` диапазон `0` .. `2**bits-1`.
 
 Выход за границы не обнаруживается при определении класса и не при создании pydantic-модели - только при `pack()` / `encode_fields`, результат - `ValueOverflowError`. Граничные значения проходят без ошибки.
 

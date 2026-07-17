@@ -12,8 +12,7 @@ BinaryCallbackError
 │   ├── InsufficientBitsError
 │   ├── DuplicateBinOrderError
 │   ├── MissingMaxLenError
-│   ├── BitsNotApplicableToListError
-│   ├── SignedNotApplicableError
+│   ├── UnrecognizedBinFieldParamError
 │   ├── MissingSignedError
 │   ├── NestedCallbackDataError
 │   ├── CircularNestingError
@@ -41,8 +40,7 @@ BinaryCallbackError
 | `InsufficientBitsError`        | `bits`/`item_bits` enum-поля меньше минимума для `len(bin_order)` значений         |
 | `DuplicateBinOrderError`       | повтор одного члена enum в `bin_order`                                            |
 | `MissingMaxLenError`           | `List[Enum]`-поле без обязательного `max_len`                                     |
-| `BitsNotApplicableToListError` | `bits` передан для `List[Enum]`-поля                                              |
-| `SignedNotApplicableError`     | `signed` передан для типа, где он не применим (`bool`, `Enum`, `List[Enum]`, вложенная модель) |
+| `UnrecognizedBinFieldParamError` | параметру `bfield()`, переданному для поля, передан аргумент, не входящий в набор допустимых для типа этого поля (например, `bits` для `List[Enum]`, `signed` для `bool`, `Enum`, `List[Enum]` или вложенной модели) |
 | `MissingSignedError`           | `int`-поле без обязательного `signed`                                             |
 | `NestedCallbackDataError`      | поле ссылается на подкласс `BinaryCallbackData` вместо обычного `BaseModel`        |
 | `CircularNestingError`         | вложенная модель прямо или через несколько уровней ссылается сама на себя         |

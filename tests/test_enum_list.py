@@ -6,11 +6,10 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel
 
-from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import InsufficientBitsError
 from aiogram_bincallback.core import MissingMaxLenError
-from aiogram_bincallback.core import SignedNotApplicableError
+from aiogram_bincallback.core import UnrecognizedBinFieldParamError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 from aiogram_bincallback.planning import EnumListFieldCodec
 from aiogram_bincallback.planning import build_codec_plan
@@ -129,21 +128,21 @@ def test_enum_list_field_item_bits_affects_total_bits_accounting():
     assert plan_total_bits(plan) == len_bits + 3 * item_bits
 
 
-def test_enum_list_field_with_bits_raises_bits_not_applicable_to_list_error():
+def test_enum_list_field_with_bits_raises_unrecognized_bin_field_param_error():
     class Model(BaseModel):
         path: List[Direction] = planning_bfield(max_len=3, bits=4)
 
-    with pytest.raises(BitsNotApplicableToListError) as excinfo:
+    with pytest.raises(UnrecognizedBinFieldParamError) as excinfo:
         build_codec_plan(Model)
 
     assert "path" in str(excinfo.value)
 
 
-def test_enum_list_field_with_signed_raises_signed_not_applicable_error():
+def test_enum_list_field_with_signed_raises_unrecognized_bin_field_param_error():
     class Model(BaseModel):
         path: List[Direction] = planning_bfield(max_len=3, signed=False)
 
-    with pytest.raises(SignedNotApplicableError):
+    with pytest.raises(UnrecognizedBinFieldParamError):
         build_codec_plan(Model)
 
 

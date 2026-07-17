@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any
 from typing import cast
 from typing import Dict
+from typing import FrozenSet
 from typing import Generic
 from typing import List
 from typing import Optional
@@ -24,7 +25,6 @@ from aiogram_bincallback.core import BIN_MAX_LEN_KEY
 from aiogram_bincallback.core import BIN_ORDER_KEY
 from aiogram_bincallback.core import BIN_PLAN_ATTR
 from aiogram_bincallback.core import BIN_SIGNED_KEY
-from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import CircularNestingError
 from aiogram_bincallback.core import DuplicateBinOrderError
 from aiogram_bincallback.core import DEFAULT_BOOL_BITS
@@ -34,12 +34,34 @@ from aiogram_bincallback.core import MissingBitsError
 from aiogram_bincallback.core import MissingMaxLenError
 from aiogram_bincallback.core import MissingSignedError
 from aiogram_bincallback.core import NestedCallbackDataError
-from aiogram_bincallback.core import SignedNotApplicableError
+from aiogram_bincallback.core import UnrecognizedBinFieldParamError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 
 _PATH_SEPARATOR = "."
 
 EnumT = TypeVar("EnumT", bound=Enum)
+
+_BOOL_KIND = "bool"
+_INT_KIND = "int"
+_ENUM_KIND = "enum"
+_ENUM_LIST_KIND = "enum_list"
+_NESTED_KIND = "nested"
+
+_ALLOWED_PARAMS: Dict[str, FrozenSet[str]] = {
+    _BOOL_KIND: frozenset(),
+    _INT_KIND: frozenset({BIN_BITS_KEY, BIN_SIGNED_KEY}),
+    _ENUM_KIND: frozenset({BIN_BITS_KEY, BIN_ORDER_KEY}),
+    _ENUM_LIST_KIND: frozenset({BIN_ITEM_BITS_KEY, BIN_ORDER_KEY, BIN_MAX_LEN_KEY}),
+    _NESTED_KIND: frozenset(),
+}
+
+_BFIELD_PARAM_NAMES: Dict[str, str] = {
+    BIN_BITS_KEY: "bits",
+    BIN_ITEM_BITS_KEY: "item_bits",
+    BIN_ORDER_KEY: "bin_order",
+    BIN_SIGNED_KEY: "signed",
+    BIN_MAX_LEN_KEY: "max_len",
+}
 
 
 @dataclass(frozen=True)
@@ -115,6 +137,18 @@ def _field_extra(field_info: FieldInfo) -> Dict[str, Any]:
     return {}
 
 
+def _check_allowed_params(
+    path: str,
+    annotation: Any,
+    extra: Dict[str, Any],
+    kind: str,
+) -> None:
+    allowed_params = _ALLOWED_PARAMS[kind]
+    for param_name, value in extra.items():
+        if value is not None and param_name not in allowed_params:
+            raise UnrecognizedBinFieldParamError(path, annotation, _BFIELD_PARAM_NAMES[param_name])
+
+
 def extend_path(path: Optional[str], field_name: str) -> str:
     if path is None:
         return field_name
@@ -145,8 +179,7 @@ def _build_field_codec(
         raise NestedCallbackDataError(path)
     if _is_nested_model(annotation):
         extra = _field_extra(field_info)
-        if extra.get(BIN_SIGNED_KEY) is not None:
-            raise SignedNotApplicableError(path, annotation)
+        _check_allowed_params(path, annotation, extra, _NESTED_KIND)
         nested_plan = build_codec_plan(annotation, path, visited)
         return NestedFieldCodec(
             name=field_name,
@@ -200,21 +233,27 @@ def _build_primitive_codec(
     optional: bool,
 ) -> FieldCodec:
     extra = _field_extra(field_info)
-    bits = _extra_int(extra, BIN_BITS_KEY)
-    item_bits = _extra_int(extra, BIN_ITEM_BITS_KEY)
-    signed = _extra_bool(extra, BIN_SIGNED_KEY)
-    bin_order = _extra_sequence(extra, BIN_ORDER_KEY)
-    max_len = _extra_int(extra, BIN_MAX_LEN_KEY)
     if annotation is bool:
-        return _build_bool_codec(field_name, path, signed, optional)
+        _check_allowed_params(path, annotation, extra, _BOOL_KIND)
+        return _build_bool_codec(field_name, path, optional)
     if annotation is int:
+        _check_allowed_params(path, annotation, extra, _INT_KIND)
+        bits = _extra_int(extra, BIN_BITS_KEY)
+        signed = _extra_bool(extra, BIN_SIGNED_KEY)
         return _build_int_codec(field_name, path, bits, signed, optional)
     if _is_enum_type(annotation):
-        return _build_enum_codec(field_name, path, bits, signed, bin_order, annotation, optional)
+        _check_allowed_params(path, annotation, extra, _ENUM_KIND)
+        bits = _extra_int(extra, BIN_BITS_KEY)
+        bin_order = _extra_sequence(extra, BIN_ORDER_KEY)
+        return _build_enum_codec(field_name, path, bits, bin_order, annotation, optional)
     if _is_enum_list_annotation(annotation):
+        _check_allowed_params(path, annotation, extra, _ENUM_LIST_KIND)
+        item_bits = _extra_int(extra, BIN_ITEM_BITS_KEY)
+        bin_order = _extra_sequence(extra, BIN_ORDER_KEY)
+        max_len = _extra_int(extra, BIN_MAX_LEN_KEY)
         item_enum_cls: Type[Enum] = _unwrap_enum_list_item(annotation, path)
         return _build_enum_list_codec(
-            field_name, path, bits, item_bits, signed, bin_order, max_len, item_enum_cls, optional
+            field_name, path, item_bits, bin_order, max_len, item_enum_cls, optional
         )
     raise UnsupportedFieldTypeError(path, annotation)
 
@@ -237,11 +276,8 @@ def _extra_sequence(extra: Dict[str, Any], key: str) -> Optional[Sequence[Any]]:
 def _build_bool_codec(
     field_name: str,
     path: str,
-    signed: Optional[bool],
     optional: bool,
 ) -> BoolFieldCodec:
-    if signed is not None:
-        raise SignedNotApplicableError(path, bool)
     return BoolFieldCodec(name=field_name, path=path, optional=optional)
 
 
@@ -268,13 +304,10 @@ def _build_enum_codec(
     field_name: str,
     path: str,
     bits: Optional[int],
-    signed: Optional[bool],
     bin_order: Optional[Sequence[EnumT]],
     enum_cls: Type[EnumT],
     optional: bool,
 ) -> EnumFieldCodec:
-    if signed is not None:
-        raise SignedNotApplicableError(path, enum_cls)
     if bits is None:
         raise MissingBitsError(path)
     resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)
@@ -292,18 +325,12 @@ def _build_enum_codec(
 def _build_enum_list_codec(
     field_name: str,
     path: str,
-    bits: Optional[int],
     item_bits: Optional[int],
-    signed: Optional[bool],
     bin_order: Optional[Sequence[EnumT]],
     max_len: Optional[int],
     enum_cls: Type[EnumT],
     optional: bool,
 ) -> EnumListFieldCodec:
-    if signed is not None:
-        raise SignedNotApplicableError(path, enum_cls)
-    if bits is not None:
-        raise BitsNotApplicableToListError(path)
     if max_len is None:
         raise MissingMaxLenError(path)
     resolved_bin_order = _resolve_bin_order(path, bin_order, enum_cls)

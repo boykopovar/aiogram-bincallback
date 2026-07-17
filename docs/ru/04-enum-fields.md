@@ -30,9 +30,9 @@ status: Status = bfield(bits=4)
 
 Дубликат члена в `bin_order` - `DuplicateBinOrderError`.
 
-## signed
+## signed, item_bits, max_len
 
-Не применим. Передача `signed=` (в т.ч. `False`) - `SignedNotApplicableError`.
+Не применимы. Передача любого из них (в т.ч. `signed=False`) - `UnrecognizedBinFieldParamError`.
 
 ## Кодирование
 

@@ -37,17 +37,11 @@ class MissingMaxLenError(DefinitionError):
         super().__init__(f"list field '{path}' requires an explicit max_len= argument to bfield()")
 
 
-class BitsNotApplicableToListError(DefinitionError):
-    def __init__(self, path: str) -> None:
+class UnrecognizedBinFieldParamError(DefinitionError):
+    def __init__(self, path: str, annotation: object, param_name: str) -> None:
         super().__init__(
-            f"field '{path}' is a list field and does not accept a bits= argument, "
-            f"item width is derived from bin_order"
+            f"field '{path}' of type {annotation!r} does not accept a {param_name}= argument to bfield()"
         )
-
-
-class SignedNotApplicableError(DefinitionError):
-    def __init__(self, path: str, annotation: object) -> None:
-        super().__init__(f"field '{path}' of type {annotation!r} does not accept a signed= argument")
 
 
 class MissingSignedError(DefinitionError):

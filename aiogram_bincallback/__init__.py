@@ -2,7 +2,6 @@ from aiogram_bincallback.base import BinaryCallbackData
 from aiogram_bincallback.base import bfield
 from aiogram_bincallback.config import configure
 from aiogram_bincallback.core import BinaryCallbackError
-from aiogram_bincallback.core import BitsNotApplicableToListError
 from aiogram_bincallback.core import CircularNestingError
 from aiogram_bincallback.core import DecodeError
 from aiogram_bincallback.core import DecryptionError
@@ -20,8 +19,8 @@ from aiogram_bincallback.core import PayloadCorruptError
 from aiogram_bincallback.core import PrefixCollisionError
 from aiogram_bincallback.core import PrefixEnumMismatchError
 from aiogram_bincallback.core import PrefixMismatchError
-from aiogram_bincallback.core import SignedNotApplicableError
 from aiogram_bincallback.core import SizeLimitExceededError
+from aiogram_bincallback.core import UnrecognizedBinFieldParamError
 from aiogram_bincallback.core import UnsupportedFieldTypeError
 from aiogram_bincallback.core import ValueOverflowError
 from aiogram_bincallback.core import VersionMismatchError
@@ -35,7 +34,6 @@ __all__ = (
     "ICipher",
     "NullCipher",
     "BinaryCallbackError",
-    "BitsNotApplicableToListError",
     "CircularNestingError",
     "DecodeError",
     "DecryptionError",
@@ -53,8 +51,8 @@ __all__ = (
     "PrefixCollisionError",
     "PrefixEnumMismatchError",
     "PrefixMismatchError",
-    "SignedNotApplicableError",
     "SizeLimitExceededError",
+    "UnrecognizedBinFieldParamError",
     "UnsupportedFieldTypeError",
     "ValueOverflowError",
     "VersionMismatchError",

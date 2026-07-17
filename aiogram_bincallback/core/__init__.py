@@ -14,7 +14,6 @@ from aiogram_bincallback.core.constants import MAX_CALLBACK_LENGTH
 from aiogram_bincallback.core.constants import PREFIX_BITS
 from aiogram_bincallback.core.constants import VERSION_BITS
 from aiogram_bincallback.core.exceptions import BinaryCallbackError
-from aiogram_bincallback.core.exceptions import BitsNotApplicableToListError
 from aiogram_bincallback.core.exceptions import CipherReconfiguredAfterUseError
 from aiogram_bincallback.core.exceptions import CircularNestingError
 from aiogram_bincallback.core.exceptions import DecodeError
@@ -33,8 +32,8 @@ from aiogram_bincallback.core.exceptions import PayloadCorruptError
 from aiogram_bincallback.core.exceptions import PrefixCollisionError
 from aiogram_bincallback.core.exceptions import PrefixEnumMismatchError
 from aiogram_bincallback.core.exceptions import PrefixMismatchError
-from aiogram_bincallback.core.exceptions import SignedNotApplicableError
 from aiogram_bincallback.core.exceptions import SizeLimitExceededError
+from aiogram_bincallback.core.exceptions import UnrecognizedBinFieldParamError
 from aiogram_bincallback.core.exceptions import UnsupportedFieldTypeError
 from aiogram_bincallback.core.exceptions import ValueOverflowError
 from aiogram_bincallback.core.exceptions import VersionMismatchError
@@ -56,7 +55,6 @@ __all__ = (
     "PREFIX_BITS",
     "VERSION_BITS",
     "BinaryCallbackError",
-    "BitsNotApplicableToListError",
     "CipherReconfiguredAfterUseError",
     "CircularNestingError",
     "DecodeError",
@@ -75,8 +73,8 @@ __all__ = (
     "PrefixCollisionError",
     "PrefixEnumMismatchError",
     "PrefixMismatchError",
-    "SignedNotApplicableError",
     "SizeLimitExceededError",
+    "UnrecognizedBinFieldParamError",
     "UnsupportedFieldTypeError",
     "ValueOverflowError",
     "VersionMismatchError",

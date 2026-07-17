@@ -16,7 +16,7 @@ class SomeCb(BinaryCallbackData, prefix=1, version=1):
 
 Прямое наследование от `BinaryCallbackData` без `prefix`/`version` не производится - это базовый класс, `__bin_prefix__ is None`, вызов `is_valid`/`describe` на нем - `TypeError`.
 
-`prefix` транслируется в текстовый префикс aiogram `bin{prefix}` (например `prefix=1` -> `"bin1"`). Используется aiogram для маршрутизации фильтров, на бинарный payload не влияет.
+`prefix` транслируется в текстовый префикс aiogram `bin{prefix}` (например, при `prefix=1` получается `"bin1"`). Используется aiogram для маршрутизации фильтров, на бинарный payload не влияет.
 
 ## Регистрация
 
