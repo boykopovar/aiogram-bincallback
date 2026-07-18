@@ -1,0 +1,16 @@
+# Table of contents
+
+1. [Callback class definition](01-callback-class-definition.md)
+2. [bfield parameters](02-bfield-parameters.md)
+3. [Field types](03-field-types.md)
+4. [Enum fields](04-enum-fields.md)
+5. [Enum lists](05-enum-lists.md)
+6. [Nested models](06-nested-models.md)
+7. [Optional fields](07-optional-fields.md)
+8. [Bit budget and size limit](08-size-limit.md)
+9. [Packing, unpacking, try_unpack](09-pack-unpack.md)
+10. [describe](10-describe.md)
+11. [prefix/version registry](11-registry.md)
+12. [Configuration: wire codec and encryption](12-configuration.md)
+13. [Payload format at the bit level](13-payload-format.md)
+14. [Exceptions](14-exceptions.md)

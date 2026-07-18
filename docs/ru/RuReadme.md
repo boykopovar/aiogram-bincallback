@@ -5,17 +5,16 @@
 [![License](https://img.shields.io/pypi/l/aiogram-bincallback.svg)](https://github.com/boykopovar/aiogram-bincallback/blob/main/LICENSE)
 [![aiogram](https://img.shields.io/badge/aiogram-3.x-blue.svg)](https://github.com/aiogram/aiogram)
 
-Bitwise serialization of CallbackData for aiogram 3.x instead of the text format `prefix:field1:field2`. Each field occupies a fixed number of bits - more data fits into the Telegram limit (64 bytes), and the payload size is known at class definition time.
 
-## [Ru README](https://github.com/boykopovar/aiogram-bincallback/blob/main/docs/ru/RuReadme.md)
+Побитовая сериализация CallbackData для aiogram 3.x вместо текстового формата `prefix:field1:field2`. Каждое поле занимает фиксированное число бит - в лимит Telegram (64 байта) помещается больше данных, размер payload известен на этапе определения класса.
 
-## Installation
+## Установка
 
 ```
 pip install aiogram-bincallback
 ```
 
-Dependencies: `aiogram>=3.0,<4.0`, `pydantic>=2.0,<3.0`, Python 3.8+.
+Зависимости: `aiogram>=3.0,<4.0`, `pydantic>=2.0,<3.0`, Python 3.8+.
 
 
 ```python
@@ -39,7 +38,7 @@ class OrderCb(BinaryCallbackData, prefix=CbPrefix.ORDER.value, version=1):
     status: Status = bfield(bits=4)
 ```
 
-`prefix` and `version` are class inheritance arguments, not model fields. Both are required.
+`prefix` и `version` - аргументы наследования класса, не поля модели. Оба обязательны.
 
 ```python
 cb = OrderCb(order_id=42, status=Status.PENDING)
@@ -47,7 +46,7 @@ packed = cb.pack()
 restored = OrderCb.unpack(packed)
 ```
 
-`OrderCb` is simultaneously a `pydantic.BaseModel` and an `aiogram.CallbackData`, used in filters like a regular `CallbackData`:
+`OrderCb` - одновременно `pydantic.BaseModel` и `aiogram.CallbackData`, используется в фильтрах как обычный `CallbackData`:
 
 ```python
 from aiogram import Router
@@ -60,4 +59,4 @@ async def handle_order(callback, callback_data: OrderCb):
     ...
 ```
 
-[Documentation](https://github.com/boykopovar/aiogram-bincallback/blob/main/docs/en/00-table-of-contents.md)
+[Документация](00-table-of-contents.md)
